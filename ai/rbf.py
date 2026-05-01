@@ -1,5 +1,7 @@
 import numpy as np
 from preprocessing import preprocess_data
+from sklearn.cluster import KMeans
+from sklearn.metrics import accuracy_score
 
 
 class RBFNetwork:
@@ -9,84 +11,54 @@ class RBFNetwork:
         self.centers = None
         self.weights = None
 
-    # ─────────────────────────────────────────────
-    # Gaussian RBF Function
-    # ─────────────────────────────────────────────
     def _rbf(self, x, c):
         return np.exp(-np.linalg.norm(x - c) ** 2 / (2 * self.sigma ** 2))
 
-    # ─────────────────────────────────────────────
-    # Build Interpolation Matrix (G)
-    # ─────────────────────────────────────────────
-    def _calculate_interpolation_matrix(self, X):
+    def _build_G(self, X):
         G = np.zeros((X.shape[0], self.num_centers))
-
         for i, x in enumerate(X):
             for j, c in enumerate(self.centers):
                 G[i, j] = self._rbf(x, c)
-
         return G
 
-    # ─────────────────────────────────────────────
-    # Training
-    # ─────────────────────────────────────────────
     def fit(self, X, y):
-        # اختيار الـ centers عشوائي من البيانات
-        random_idx = np.random.choice(len(X), self.num_centers, replace=False)
-        self.centers = X[random_idx]
+        # ✅ استخدام KMeans بدل العشوائي
+        kmeans = KMeans(n_clusters=self.num_centers, random_state=42)
+        kmeans.fit(X)
+        self.centers = kmeans.cluster_centers_
 
-        # حساب G matrix
-        G = self._calculate_interpolation_matrix(X)
-
-        # حساب weights باستخدام pseudo-inverse
+        G = self._build_G(X)
         self.weights = np.linalg.pinv(G).dot(y)
 
-    # ─────────────────────────────────────────────
-    # Prediction
-    # ─────────────────────────────────────────────
     def predict(self, X):
-        G = self._calculate_interpolation_matrix(X)
+        G = self._build_G(X)
         return G.dot(self.weights)
 
-    # ─────────────────────────────────────────────
-    # Classification Output (optional)
-    # ─────────────────────────────────────────────
-    def predict_classes(self, X):
-        preds = self.predict(X)
-        return np.round(preds).astype(int)
 
 
-# =============================================================================
-# TEST RUN
-# =============================================================================
+
+
+
+
+# ============================================
+# 🚀 MAIN
+# ============================================
+
 if __name__ == "__main__":
 
-    print("\n Running RBF Model...\n")
+    print("🚀 Running RBF Model...\n")
 
-    # تحميل الداتا من preprocessing
-    X_train, X_test, y_train, y_test, scaler, le, feature_cols = preprocess_data(
-        csv_path="data/Adaptive_Lab_Guardian.csv",
-        oversample_train=False
+    X_train, X_test, y_train, y_test, *_ = preprocess_data(
+        csv_path="data/Adaptive_Lab_Guardian.csv"
     )
 
-    # إنشاء الموديل
-    rbf = RBFNetwork(num_centers=12, sigma=1.5)
+    # 🔥 sigma ثابت مؤقتًا
+    model = RBFNetwork(num_centers=12, sigma=1.5)
+    model.fit(X_train, y_train)
 
-    # تدريب
-    rbf.fit(X_train, y_train)
+    preds = model.predict(X_test)
+    preds_classes = (preds > 0.5).astype(int)
 
-    # توقع
-    preds = rbf.predict(X_test)
-    preds_classes = rbf.predict_classes(X_test)
+    acc = np.mean(preds_classes == y_test)
 
-    # تقييم
-    mse = np.mean((preds - y_test) ** 2)
-    accuracy = np.mean(preds_classes == y_test)
-
-    print("MSE:", mse)
-    print("Accuracy:", accuracy)
-
-    # عرض شوية نتائج
-    print("\nSample Predictions:")
-    for i in range(5):
-        print(f"Pred: {preds_classes[i]} | True: {y_test[i]}")
+    print("🎯 Accuracy:", acc)
