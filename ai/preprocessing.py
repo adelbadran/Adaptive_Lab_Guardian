@@ -3,6 +3,9 @@ import numpy as np
 from sklearn.preprocessing import MinMaxScaler, LabelEncoder
 from sklearn.utils import resample
 
+
+
+
 GREEN  = "\033[92m"
 YELLOW = "\033[93m"
 CYAN   = "\033[96m"
@@ -186,7 +189,11 @@ def preprocess_data(csv_path: str, oversample_train: bool = False):
 #  STANDALONE TEST  (run:  python preprocessing.py)
 # =============================================================================
 if __name__ == "__main__":
+
     CSV_PATH = r"C:\Adaptive Lab Guardian\data\Adaptive_Lab_Guardian.csv"  
+
+     
+
 
     X_train, X_test, y_train, y_test, scaler, le, feature_cols = preprocess_data(
         csv_path=CSV_PATH,
@@ -197,4 +204,8 @@ if __name__ == "__main__":
     print("y_train dtype :", y_train.dtype)
     print("Scaler type   :", type(scaler).__name__)
     print("LabelEncoder  :", le.classes_)
+
     print("Feature cols  :", feature_cols)
+
+    print("Feature cols  :", feature_cols)
+
