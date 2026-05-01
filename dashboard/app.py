@@ -8,6 +8,14 @@ import numpy as np
 import os
 import random
 from datetime import datetime, timedelta
+import networkx as nx
+import matplotlib.pyplot as plt 
+import sys 
+from sklearn.decomposition import PCA
+
+# GNN IMPORT
+sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
+from ai.gnn import draw_attention_graph
 
 # =============================================================================
 #  PAGE CONFIG
@@ -489,6 +497,7 @@ anomaly   = rec.get("is_anomaly", False)
 gas_pred  = rec.get("gas_pred", 0)
 temp_pred = rec.get("temp_pred", 0)
 reward    = rec.get("reward", 0)
+attention = rec.get("attention", None)
 
 state_color = {"Normal": "#00e5a0", "Warning": "#f5b731", "Dangerous": "#ff4455"}.get(state_lbl, "#00e5a0")
 state_pill_cls = {"Normal": "state-pill-normal", "Warning": "state-pill-warning", "Dangerous": "state-pill-danger"}.get(state_lbl, "state-pill-normal")
@@ -705,7 +714,20 @@ with st.container():
     st.markdown('</div>', unsafe_allow_html=True)
 
 # =============================================================================
-#  E — EVENT LOG
+#  E — GNN ATTENTION GRAPH
+# =============================================================================
+
+if attention is not None:
+    fig = draw_attention_graph(attention)
+    if fig:
+        st.pyplot(fig)
+    else:
+        st.warning("Failed to draw attention graph")
+else:
+    st.warning("GNN attention not available")
+
+# =============================================================================
+#  F — EVENT LOG
 # =============================================================================
 st.markdown('<div class="sec-hdr">E. Event Log (Recent)</div>', unsafe_allow_html=True)
 

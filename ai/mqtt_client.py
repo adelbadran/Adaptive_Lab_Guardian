@@ -1,7 +1,6 @@
 import json
 import time
 import paho.mqtt.client as mqtt
-
 from main import run_pipeline   
 
 # =============================================================================

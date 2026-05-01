@@ -6,6 +6,8 @@
 import numpy as np
 import pickle
 import os
+import torch
+from gnn import GATModel
 
 GREEN  = "\033[92m"
 YELLOW = "\033[93m"
@@ -95,34 +97,43 @@ STATE_LABELS = {0: "Normal", 1: "Warning", 2: "Dangerous"}
 # =============================================================================
 
 # ── Step 1: GNN ───────────────────────────────────────────────────────────────
+
+# load trained model 
+gnn_model = GATModel()
+gnn_model.load_state_dict(torch.load(os.path.join(MODELS_DIR, "gnn.pth"), map_location="cpu"))
+gnn_model.eval()
+
+def create_edge_index(num_nodes=5):
+    edges = []
+    for i in range(num_nodes):
+        for j in range(num_nodes):
+            if i != j:
+                edges.append([i, j])
+    return torch.tensor(edges, dtype=torch.long).t()
+
+edge_index = create_edge_index()
+
 def step_gnn(x: np.ndarray) -> np.ndarray:
-    """
-    GNN: model sensor relationships via adjacency matrix.
-    Person 3 implements: x_new = A.dot(x)
-    Output: same shape as input (5,)
-    """
-    if gnn_mod and hasattr(gnn_mod, "transform"):
-        return gnn_mod.transform(x)
+    x_tensor = torch.tensor(x, dtype=torch.float).view(5, 1)
+    batch = torch.zeros(5, dtype=torch.long)
 
-    # ── Placeholder: simple adjacency-weighted transform ─────────────────────
-    # A basic correlation-aware adjacency matrix (5×5)
-    # Temp  ↔ Humidity, Gas ↔ Temp, Light and Motion independent
-    A = np.array([
-        [1.0, 0.6, 0.5, 0.1, 0.1],   # Temp_C
-        [0.6, 1.0, 0.3, 0.1, 0.0],   # Humidity_pct
-        [0.5, 0.3, 1.0, 0.2, 0.2],   # Gas_AQI
-        [0.1, 0.1, 0.2, 1.0, 0.4],   # Light_Lux
-        [0.1, 0.0, 0.2, 0.4, 1.0],   # Motion_Detected
-    ])
-    return A.dot(x)
+    with torch.no_grad():
+        emb, attn1, attn2 = gnn_model(x_tensor, edge_index, batch, return_attention=True)
 
+    # Extract attention from first layer
+    edge_idx, weights = attn1
 
+    attention = {
+        "edges": edge_idx.numpy().tolist(),
+        "weights": weights.numpy().tolist()
+    }
+
+    return emb.numpy(), attention
 # ── Step 2: PCA ──────────────────────────────────────────────────────────────
 def step_pca(x: np.ndarray) -> np.ndarray:
     """
-    PCA: reduce noise and dimensionality.
-    Person 3 implements: pca.transform(x)
-    Output: compressed feature vector
+    Input  → high-dimensional vector (8 features) from GAT
+    Output → lower-dimensional vector (3 features)
     """
     if pca_model and hasattr(pca_model, "transform"):
         return pca_model.transform(x.reshape(1, -1)).flatten()
@@ -322,11 +333,12 @@ def run_pipeline(sensor_data: dict, scaler=None, verbose: bool = True) -> dict:
     # ─────────────────────────────────────────────────────────────────────────
     # STEP 1 — GNN
     # ─────────────────────────────────────────────────────────────────────────
-    x_gnn = step_gnn(x)
+    x_gnn, attention = step_gnn(x)
     # Re-normalise after GNN dot product to keep values in [0, 1]
     x_gnn = np.clip(x_gnn / (x_gnn.max() + 1e-9), 0.0, 1.0)
     log("GNN ", f"Sensor relationships applied → {x_gnn.round(4)}")
 
+    
     # ─────────────────────────────────────────────────────────────────────────
     # STEP 2 — PCA
     # ─────────────────────────────────────────────────────────────────────────
@@ -383,6 +395,7 @@ def run_pipeline(sensor_data: dict, scaler=None, verbose: bool = True) -> dict:
             "temp_pred":   round(temp_pred, 4),
             "is_anomaly":  is_anomaly,
             "reward":      reward,
+            "attention":   attention 
         }
     }
 
