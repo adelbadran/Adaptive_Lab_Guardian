@@ -142,16 +142,36 @@ torch.save(model.state_dict(), "ai/models/gnn.pth")
 # =========================
 model.eval()
 embeddings = []
+attn_list = []
 
 with torch.no_grad():
     for data in train_loader:
         data = data.to(device)
 
-        emb = model(data.x, data.edge_index, data.batch)
+        emb, attn1, attn2 = model(data.x, data.edge_index, data.batch,return_attention=True)
         embeddings.append(emb.cpu().numpy())
 
+        edge_idx, weights = attn1
+        attn_list.append({
+            "edges": edge_idx.cpu().numpy(),
+            "weights": weights.cpu().numpy()
+        })
 embeddings = np.vstack(embeddings)
 
+
+# edges same in all batches so we take first one 
+edges = attn_list[0]["edges"]
+# average weights
+all_weights = np.mean([a["weights"] for a in attn_list], axis=0)
+if len(all_weights.shape) > 1:
+    all_weights = all_weights.mean(axis=1)
+
+saved_attention = {
+    "edges": edges.T.tolist(),
+    "weights": all_weights
+}
+np.save("ai/models/gnn_attention.npy", saved_attention, allow_pickle=True)
+print("✔ Attention saved")
 
 # =========================
 # PCA

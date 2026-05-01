@@ -7,7 +7,7 @@ import numpy as np
 import pickle
 import os
 import torch
-from gnn import GATModel
+from ai.gnn import GATModel
 
 GREEN  = "\033[92m"
 YELLOW = "\033[93m"
@@ -37,8 +37,8 @@ print(f"\n{BOLD}{CYAN}{'='*60}{RESET}")
 print(f"{BOLD}{CYAN}  Loading AI Modules...{RESET}")
 print(f"{BOLD}{CYAN}{'='*60}{RESET}")
 
-gnn_mod   = _try_import("gnn")
-pca_mod   = _try_import("pca")
+gnn_mod   = _try_import("ai.gnn")
+pca_mod   = _try_import("ai.pca")
 rbf_mod   = _try_import("rbf")
 som_mod   = _try_import("som")
 art2_mod  = _try_import("art2")
@@ -55,34 +55,92 @@ def _load_numpy(filename: str):
     """Load a NumPy .npy file; return None if not found yet."""
     path = os.path.join(MODELS_DIR, filename)
     if os.path.exists(path):
-        arr = np.load(path)
+        arr = np.load(path,allow_pickle=True)
+        try:
+            arr = arr.item()  # convert back to dict
+        except:
+            pass
         print(f"  {GREEN}✔ Loaded NumPy file:{RESET} {filename}")
         return arr
     else:
         print(f"  {YELLOW}⚠ NumPy file not found (placeholder):{RESET} {filename}")
         return None
 
-def _load_model(filename: str):
-    """Load a pickled model file; return None if not found yet."""
+# def _load_model(filename: str):
+#     path = os.path.join(MODELS_DIR, filename)
+#     if os.path.exists(path):
+#         try:
+#             import joblib
+#             model = joblib.load(path)
+#             print(f"  ✔ Loaded model (joblib): {filename}")
+#             return model
+#         except Exception:
+#             try:
+#                 with open(path, "rb") as f:
+#                     model = pickle.load(f)
+#                 print(f"  ✔ Loaded model (pickle): {filename}")
+#                 return model
+#             except Exception as e:
+#                 print(f"  ⚠ Failed to load {filename}: {e}")
+#                 return None
+#     else:
+#         print(f"  ⚠ Model not found (placeholder): {filename}")
+#         return None
+
+def _load_model(filename: str, model_class=None):
     path = os.path.join(MODELS_DIR, filename)
-    if os.path.exists(path):
-        with open(path, "rb") as f:
-            model = pickle.load(f)
-        print(f"  {GREEN}✔ Loaded model:{RESET} {filename}")
-        return model
-    else:
-        print(f"  {YELLOW}⚠ Model not found (placeholder):{RESET} {filename}")
+
+    if not os.path.exists(path):
+        print(f"  ⚠ Model not found (placeholder): {filename}")
         return None
 
+    try:
+        # ── PyTorch (.pth) ─────────────────────────
+        if filename.endswith(".pth"):
+            state = torch.load(path, map_location="cpu")
+
+            if isinstance(state, dict) and model_class is not None:
+                model = model_class()
+                model.load_state_dict(state)
+                model.eval()
+                print(f"  ✔ Loaded PyTorch model: {filename}")
+                return model
+            else:
+                print(f"  ✔ Loaded full PyTorch model: {filename}")
+                return state
+
+        # ── sklearn (.pkl) ─────────────────────────
+        elif filename.endswith(".pkl"):
+            try:
+                import joblib
+                model = joblib.load(path)
+                print(f"  ✔ Loaded model (joblib): {filename}")
+                return model
+            except Exception:
+                with open(path, "rb") as f:
+                    model = pickle.load(f)
+                print(f"  ✔ Loaded model (pickle): {filename}")
+                return model
+
+        else:
+            print(f"  ⚠ Unknown model type: {filename}")
+            return None
+
+    except Exception as e:
+        print(f"  ⚠ Failed to load {filename}: {e}")
+        return None
+    
 print(f"\n{BOLD}{CYAN}{'='*60}{RESET}")
 print(f"{BOLD}{CYAN}  Loading Saved Models...{RESET}")
 print(f"{BOLD}{CYAN}{'='*60}{RESET}")
 
+gnn_model = _load_model("gnn.pth", model_class=GATModel)
 pca_model  = _load_model("pca.pkl")
 rbf_model  = _load_model("rbf.pkl")
 som_model  = _load_model("som.pkl")
 art2_model = _load_model("art2.pkl")
 rl_table   = _load_numpy("rl_qtable.npy")   # RL Q-table (numpy array)
+saved_attention = _load_numpy("gnn_attention.npy")
 
 # Feature column order
 FEATURE_COLS = ["Temp_C", "Humidity_pct", "Gas_AQI", "Light_Lux", "Motion_Detected"]
@@ -98,11 +156,6 @@ STATE_LABELS = {0: "Normal", 1: "Warning", 2: "Dangerous"}
 
 # ── Step 1: GNN ───────────────────────────────────────────────────────────────
 
-# load trained model 
-gnn_model = GATModel()
-gnn_model.load_state_dict(torch.load(os.path.join(MODELS_DIR, "gnn.pth"), map_location="cpu"))
-gnn_model.eval()
-
 def create_edge_index(num_nodes=5):
     edges = []
     for i in range(num_nodes):
@@ -114,6 +167,23 @@ def create_edge_index(num_nodes=5):
 edge_index = create_edge_index()
 
 def step_gnn(x: np.ndarray) -> np.ndarray:
+
+    if gnn_model is None:
+        # return saved attention (dataset) if no data yet become
+            return x, saved_attention
+    # if gnn_model is None:
+
+    # # ✔ Use saved attention if available
+    # if saved_attention is not None:
+    #     return x, saved_attention
+
+    # # ✔ Fallback dummy attention (IMPORTANT)
+    # dummy_attention = {
+    #     "edges": edge_index.t().numpy().tolist(),
+    #     "weights": [0.5] * edge_index.shape[1]
+    # }
+    # return x, dummy_attention
+    
     x_tensor = torch.tensor(x, dtype=torch.float).view(5, 1)
     batch = torch.zeros(5, dtype=torch.long)
 
@@ -122,10 +192,11 @@ def step_gnn(x: np.ndarray) -> np.ndarray:
 
     # Extract attention from first layer
     edge_idx, weights = attn1
+    weights = weights.mean(dim=1)
 
     attention = {
-        "edges": edge_idx.numpy().tolist(),
-        "weights": weights.numpy().tolist()
+        "edges": edge_idx.t().numpy().tolist(),
+        "weights": weights.t().numpy().tolist()
     }
 
     return emb.numpy(), attention

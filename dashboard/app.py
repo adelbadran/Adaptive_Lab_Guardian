@@ -13,9 +13,11 @@ import matplotlib.pyplot as plt
 import sys 
 from sklearn.decomposition import PCA
 
-# GNN IMPORT
-sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+from ai.main import run_pipeline
 from ai.gnn import draw_attention_graph
+
+
 
 # =============================================================================
 #  PAGE CONFIG
@@ -499,6 +501,9 @@ temp_pred = rec.get("temp_pred", 0)
 reward    = rec.get("reward", 0)
 attention = rec.get("attention", None)
 
+pipeline_result = run_pipeline(rec, scaler=None, verbose=False)
+attention = pipeline_result["_meta"]["attention"]
+
 state_color = {"Normal": "#00e5a0", "Warning": "#f5b731", "Dangerous": "#ff4455"}.get(state_lbl, "#00e5a0")
 state_pill_cls = {"Normal": "state-pill-normal", "Warning": "state-pill-warning", "Dangerous": "state-pill-danger"}.get(state_lbl, "state-pill-normal")
 
@@ -717,14 +722,18 @@ with st.container():
 #  E — GNN ATTENTION GRAPH
 # =============================================================================
 
-if attention is not None:
-    fig = draw_attention_graph(attention)
-    if fig:
-        st.pyplot(fig)
+st.markdown('<div class="sec-hdr">E. GNN Attention Graph</div>', unsafe_allow_html=True)
+col1, col2, col3 = st.columns([1, 2, 1])
+
+with col2:
+    if attention is not None:
+        fig = draw_attention_graph(attention)
+        if fig:
+            st.pyplot(fig, use_container_width=False)
+        else:
+            st.warning("Failed to draw attention graph")
     else:
-        st.warning("Failed to draw attention graph")
-else:
-    st.warning("GNN attention not available")
+        st.warning("GNN attention not available")
 
 # =============================================================================
 #  F — EVENT LOG

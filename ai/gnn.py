@@ -60,20 +60,43 @@ def draw_attention_graph(attention):
     for i, name in enumerate(SENSOR_NAMES):
         G.add_node(i, label=name)
 
-    # Add edges with weights
+    # Add edges (remove self-loops)
     for (src, dst), w in zip(edges, weights):
-        G.add_edge(src, dst, weight=w)
+        if src != dst:
+            G.add_edge(src, dst, weight=w)
 
-    pos = nx.spring_layout(G)
+    # Layout + figure size
+    pos = nx.spring_layout(G, k=0.25, seed=42)
+    fig, ax = plt.subplots(figsize=(3, 3))
 
-    plt.figure(figsize=(6, 6))
+    # Draw nodes
+    nx.draw_networkx_nodes(G, pos, node_size=700, ax=ax)
 
-    nx.draw_networkx_nodes(G, pos, node_size=2000)
-    nx.draw_networkx_labels(G, pos)
-
+    # Edge styles
     edge_weights = [G[u][v]['weight'] * 3 for u, v in G.edges()]
-    nx.draw_networkx_edges(G, pos, width=edge_weights, arrows=True)
+    edge_colors = [G[u][v]['weight'] for u, v in G.edges()]
 
-    plt.title("GNN Attention Graph")
+    # Draw edges
+    nx.draw_networkx_edges(
+        G, pos,
+        width=edge_weights,
+        edge_color=edge_colors,
+        edge_cmap=plt.cm.viridis,
+        arrows=True
+    )
 
-    return plt   
+    # DEFINE labels FIRST
+    edge_labels = {
+        (u, v): f"{G[u][v]['weight']:.2f}"
+        for u, v in G.edges()
+    }
+
+    nx.draw_networkx_edge_labels(G, pos, edge_labels=edge_labels, font_size=5, ax=ax)
+
+    # Draw node (sensor names)
+    labels = {i: name for i, name in enumerate(SENSOR_NAMES)}
+    nx.draw_networkx_labels(G, pos, labels=labels, font_size=5)
+
+    plt.title("GNN Attention Graph", fontsize=8)
+
+    return plt
