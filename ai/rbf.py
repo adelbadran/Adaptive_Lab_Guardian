@@ -1,64 +1,98 @@
+# =========================
+# RBF MODULE
+# =========================
+
 import numpy as np
-from preprocessing import preprocess_data
 from sklearn.cluster import KMeans
-from sklearn.metrics import accuracy_score
+import pickle
+import os
 
 
-class RBFNetwork:
-    def __init__(self, num_centers=10, sigma=1.0):
-        self.num_centers = num_centers
+# =========================
+# Gaussian
+# =========================
+def gaussian(x, c, sigma):
+    return np.exp(-np.linalg.norm(x - c) ** 2 / (2 * sigma ** 2))
+
+
+# =========================
+# MODEL
+# =========================
+class RBFModel:
+    def __init__(self, k=10, sigma=1.0):
+        self.k = k
         self.sigma = sigma
         self.centers = None
-        self.weights = None
+        self.W = None
 
-    def _rbf(self, x, c):
-        return np.exp(-np.linalg.norm(x - c) ** 2 / (2 * self.sigma ** 2))
+    def fit(self, X):
+        X_train, y_train = [], []
 
-    def _build_G(self, X):
-        G = np.zeros((X.shape[0], self.num_centers))
-        for i, x in enumerate(X):
-            for j, c in enumerate(self.centers):
-                G[i, j] = self._rbf(x, c)
-        return G
+        for i in range(1, len(X)):
+            prev, curr = X[i - 1], X[i]
 
-    def fit(self, X, y):
-        # ✅ استخدام KMeans بدل العشوائي
-        kmeans = KMeans(n_clusters=self.num_centers, random_state=42)
-        kmeans.fit(X)
+            y_train.append([
+                np.clip(curr[2] - prev[2], -5, 5),  # gas trend
+                np.clip(curr[0] - prev[0], -5, 5)   # temp trend
+            ])
+
+            X_train.append(curr)
+
+        X_train = np.array(X_train)
+        y_train = np.array(y_train)
+
+        kmeans = KMeans(n_clusters=self.k, random_state=42, n_init=10)
+        kmeans.fit(X_train)
         self.centers = kmeans.cluster_centers_
 
-        G = self._build_G(X)
-        self.weights = np.linalg.pinv(G).dot(y)
+        Phi = np.zeros((len(X_train), self.k))
+
+        for i in range(len(X_train)):
+            for j in range(self.k):
+                Phi[i, j] = gaussian(X_train[i], self.centers[j], self.sigma)
+
+        self.W = np.linalg.pinv(Phi).dot(y_train)
+
+        print(" RBF trained")
 
     def predict(self, X):
-        G = self._build_G(X)
-        return G.dot(self.weights)
+        if len(X.shape) == 1:
+            X = X.reshape(1, -1)
+
+        Phi = np.zeros((len(X), self.k))
+
+        for i in range(len(X)):
+            for j in range(self.k):
+                Phi[i, j] = gaussian(X[i], self.centers[j], self.sigma)
+
+        return np.clip(Phi.dot(self.W), -5, 5)
+
+
+def step_rbf(x: np.ndarray, model: RBFModel = None):
+    
+
+    if model is not None:
+        pred = model.predict(x)
+        return {
+            "gas_trend": float(pred[0][0]),
+            "temp_trend": float(pred[0][1])
+        }
+
+
+    return {
+        "gas_trend": float(x[2]),
+        "temp_trend": float(x[0])
+    }
 
 
 
+def train_rbf(X, path="ai/models/rbf.pkl", k=10, sigma=1.0):
+    model = RBFModel(k, sigma)
+    model.fit(X)
 
+    os.makedirs(os.path.dirname(path), exist_ok=True)
 
+    with open(path, "wb") as f:
+        pickle.dump(model, f)
 
-
-# ============================================
-# 🚀 MAIN
-# ============================================
-
-if __name__ == "__main__":
-
-    print("🚀 Running RBF Model...\n")
-
-    X_train, X_test, y_train, y_test, *_ = preprocess_data(
-        csv_path="data/Adaptive_Lab_Guardian.csv"
-    )
-
-    # 🔥 sigma ثابت مؤقتًا
-    model = RBFNetwork(num_centers=12, sigma=1.5)
-    model.fit(X_train, y_train)
-
-    preds = model.predict(X_test)
-    preds_classes = (preds > 0.5).astype(int)
-
-    acc = np.mean(preds_classes == y_test)
-
-    print("🎯 Accuracy:", acc)
+    return model
