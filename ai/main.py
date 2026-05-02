@@ -171,18 +171,6 @@ def step_gnn(x: np.ndarray) -> np.ndarray:
     if gnn_model is None:
         # return saved attention (dataset) if no data yet become
             return x, saved_attention
-    # if gnn_model is None:
-
-    # # ✔ Use saved attention if available
-    # if saved_attention is not None:
-    #     return x, saved_attention
-
-    # # ✔ Fallback dummy attention (IMPORTANT)
-    # dummy_attention = {
-    #     "edges": edge_index.t().numpy().tolist(),
-    #     "weights": [0.5] * edge_index.shape[1]
-    # }
-    # return x, dummy_attention
     
     x_tensor = torch.tensor(x, dtype=torch.float).view(5, 1)
     batch = torch.zeros(5, dtype=torch.long)
@@ -210,7 +198,7 @@ def step_pca(x: np.ndarray) -> np.ndarray:
         return pca_model.transform(x.reshape(1, -1)).flatten()
 
     if pca_mod and hasattr(pca_mod, "transform"):
-        return pca_mod.transform(x)
+        return pca_mod.transform(x.reshape(1, -1)).flatten()
 
     # ── Placeholder: return input unchanged ──────────────────────────────────
     return x
