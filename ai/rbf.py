@@ -10,14 +10,14 @@ import os
 
 
 # =========================
-# Gaussian
+# Gaussian Radial Basis Function
 # =========================
 def gaussian(x, c, sigma):
     return np.exp(-np.linalg.norm(x - c) ** 2 / (2 * sigma ** 2))
 
 
 # =========================
-# MODEL
+# MODEL CLASS
 # =========================
 class RBFModel:
     def __init__(self, k=4, sigma=1.0):
@@ -32,9 +32,7 @@ class RBFModel:
 
         for i in range(1, len(X)):
             prev, curr = X[i - 1], X[i]
-
             overall_trend = np.mean(curr - prev)
-
             y_train_raw.append(overall_trend)
             X_train.append(curr)
 
@@ -48,21 +46,18 @@ class RBFModel:
         self.centers = kmeans.cluster_centers_
 
         Phi = np.zeros((len(X_train), self.k))
-
         for i in range(len(X_train)):
             for j in range(self.k):
                 Phi[i, j] = gaussian(X_train[i], self.centers[j], self.sigma)
 
         self.W = np.linalg.pinv(Phi).dot(y_train)
-
-        print(" RBF trained")
+        print(" RBF trained successfully")
 
     def predict(self, X):
         if len(X.shape) == 1:
             X = X.reshape(1, -1)
 
         Phi = np.zeros((len(X), self.k))
-
         for i in range(len(X)):
             for j in range(self.k):
                 Phi[i, j] = gaussian(X[i], self.centers[j], self.sigma)
@@ -70,10 +65,16 @@ class RBFModel:
         return Phi.dot(self.W)
 
 
+# =========================
+# PIPELINE INTEGRATION FUNCTIONS
+# =========================
 def step_rbf(x: np.ndarray, model: RBFModel = None):
-    
     if model is not None:
+        if len(x.shape) == 1:
+            x = x.reshape(1, -1)
+            
         pred = model.predict(x)
+        
         return {
             "trend": float(pred[0][0])
         }
@@ -81,7 +82,6 @@ def step_rbf(x: np.ndarray, model: RBFModel = None):
     return {
         "trend": 0.0
     }
-
 
 
 def train_rbf(X, path="ai/models/rbf.pkl", k=4, sigma=1.0):
