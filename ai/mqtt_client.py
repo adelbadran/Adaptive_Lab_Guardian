@@ -1,199 +1,207 @@
+"""MQTT bridge between the ESP32 sensor node and the AI runtime."""
+
+from __future__ import annotations
+
+import csv
 import json
+import os
 import time
+from pathlib import Path
+from typing import Any
+
 import paho.mqtt.client as mqtt
 
-from main import run_pipeline   
+try:
+    from ai.main import FEATURE_COLS, format_pipeline_output, run_pipeline
+except Exception:  # pragma: no cover - direct script execution
+    from main import FEATURE_COLS, format_pipeline_output, run_pipeline
 
-# =============================================================================
-#  CONFIGURATION
-# =============================================================================
 
-BROKER = "broker.hivemq.com"
-PORT = 1883
-SENSOR_TOPIC = "alg1/sensors"
-ACTION_TOPIC = "alg1/actions"
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+LOG_FILE = PROJECT_ROOT / "data" / "sensor_log.csv"
 
-# Required keys that must exist in every ESP32 message
-REQUIRED_KEYS = ["Temp_C", "Humidity_pct", "Gas_AQI", "Light_Lux", "Motion_Detected"]
-
-# How long to wait (seconds) between reconnect attempts
+BROKER = os.getenv("ALG_MQTT_BROKER", "10.35.93.69")
+PORT = int(os.getenv("ALG_MQTT_PORT", "1883"))
+SENSOR_TOPIC = os.getenv("ALG_SENSOR_TOPIC", "alg1/sensors")
+ACTION_TOPIC = os.getenv("ALG_ACTION_TOPIC", "alg1/actions")
+ACTION_FORMAT = os.getenv("ALG_MQTT_ACTION_FORMAT", "json").lower()
 RECONNECT_DELAY = 5
 
-
-GREEN  = "\033[92m"
+GREEN = "\033[92m"
 YELLOW = "\033[93m"
-CYAN   = "\033[96m"
-RED    = "\033[91m"
-BLUE   = "\033[94m"
-BOLD   = "\033[1m"
-RESET  = "\033[0m"
+CYAN = "\033[96m"
+RED = "\033[91m"
+BLUE = "\033[94m"
+BOLD = "\033[1m"
+RESET = "\033[0m"
 
-def _banner(msg: str, colour: str = CYAN):
-    print(f"\n{BOLD}{colour}{'='*60}{RESET}")
-    print(f"{BOLD}{colour}  {msg}{RESET}")
-    print(f"{BOLD}{colour}{'='*60}{RESET}")
 
-def _log(tag: str, msg: str, colour: str = RESET):
+def _banner(message: str, colour: str = CYAN) -> None:
+    print(f"\n{BOLD}{colour}{'=' * 64}{RESET}")
+    print(f"{BOLD}{colour}{message}{RESET}")
+    print(f"{BOLD}{colour}{'=' * 64}{RESET}")
+
+
+def _log(tag: str, message: str, colour: str = RESET) -> None:
     timestamp = time.strftime("%H:%M:%S")
-    print(f"  {BOLD}{BLUE}[{timestamp}][{tag}]{RESET} {colour}{msg}{RESET}")
+    print(f"{BOLD}{BLUE}[{timestamp}][{tag:<7}]{RESET} {colour}{message}{RESET}")
 
-# =============================================================================
-#  MQTT CALLBACKS
-# =============================================================================
+
+def _validate_sensor_payload(payload: dict[str, Any]) -> dict[str, float]:
+    missing = [key for key in FEATURE_COLS if key not in payload]
+    if missing:
+        raise ValueError(f"missing sensor fields: {missing}")
+
+    clean = {key: float(payload[key]) for key in FEATURE_COLS}
+    clean["Motion_Detected"] = int(clean["Motion_Detected"])
+    if "Timestamp" in payload:
+        clean["Timestamp"] = payload["Timestamp"]
+    return clean
+
+
+def _action_payload(result: dict[str, Any]) -> str:
+    action = {key: value for key, value in result.items() if key != "_meta"}
+    if ACTION_FORMAT in {"mode", "id", "int"}:
+        return str(action.get("action_id", result.get("_meta", {}).get("action_id", 0)))
+    return json.dumps(action, separators=(",", ":"))
+
+
+def _write_log(sensor_data: dict[str, Any], result: dict[str, Any]) -> None:
+    LOG_FILE.parent.mkdir(parents=True, exist_ok=True)
+    meta = result.get("_meta", {})
+    action = {key: value for key, value in result.items() if key != "_meta"}
+    row = {
+        "timestamp": time.strftime("%Y-%m-%d %H:%M:%S"),
+        "sensor_timestamp": sensor_data.get("Timestamp", ""),
+        **sensor_data,
+        "state_label": meta.get("state_label", "Unknown"),
+        "risk": meta.get("risk", "Unknown"),
+        "risk_score": meta.get("risk_score", 0.0),
+        "scenario_id": meta.get("scenario_id", 0),
+        "scenario": meta.get("scenario", "Unknown"),
+        "cluster_id": meta.get("cluster_id", 0),
+        "gas_pred": meta.get("gas_pred", 0.0),
+        "temp_pred": meta.get("temp_pred", 0.0),
+        "trend": meta.get("trend", 0.0),
+        "raw_trend": meta.get("raw_trend", 0.0),
+        "spatial_risk": meta.get("spatial_risk", 0.0),
+        "anomaly_score": meta.get("anomaly_score", 0.0),
+        "is_anomaly": meta.get("is_anomaly", False),
+        "guard_risk_class": meta.get("guard_risk_class", 0),
+        "guard_scenario_class": meta.get("guard_scenario_class", 0),
+        "guard_scenario_label": meta.get("guard_scenario_label", "Unknown"),
+        "guard_confidence": meta.get("guard_confidence", 0.0),
+        "reward": meta.get("reward", 0.0),
+        **action,
+    }
+
+    fieldnames = [
+        "timestamp",
+        "sensor_timestamp",
+        *FEATURE_COLS,
+        "state_label",
+        "risk",
+        "risk_score",
+        "scenario_id",
+        "scenario",
+        "cluster_id",
+        "gas_pred",
+        "temp_pred",
+        "trend",
+        "raw_trend",
+        "spatial_risk",
+        "anomaly_score",
+        "is_anomaly",
+        "guard_risk_class",
+        "guard_scenario_class",
+        "guard_scenario_label",
+        "guard_confidence",
+        "reward",
+        "fan",
+        "alarm",
+        "servo",
+        "buzzer",
+        "rgb_led",
+        "action_id",
+    ]
+
+    file_exists = LOG_FILE.exists()
+    with LOG_FILE.open("a", newline="", encoding="utf-8") as f:
+        writer = csv.DictWriter(f, fieldnames=fieldnames)
+        if not file_exists:
+            writer.writeheader()
+        writer.writerow({key: row.get(key, "") for key in fieldnames})
+
 
 def on_connect(client, userdata, flags, rc):
-    """
-    Called automatically when the client connects to the broker.
-    rc = 0 → success | rc != 0 → connection refused (check broker/port)
-    """
     if rc == 0:
-        _banner("✅  Connected to MQTT Broker", GREEN)
-        _log("MQTT", f"Broker : {BROKER}:{PORT}",       GREEN)
-        _log("MQTT", f"Sub    : {SENSOR_TOPIC}",         GREEN)
-        _log("MQTT", f"Pub    : {ACTION_TOPIC}",         GREEN)
-        _log("MQTT", "Waiting for sensor data...\n",     GREEN)
-
-        # Subscribe to the sensor topic INSIDE on_connect
-        # (re-subscribes automatically after any reconnect)
+        _banner("Adaptive Lab Guardian MQTT bridge connected", GREEN)
+        _log("BROKER", f"{BROKER}:{PORT}", GREEN)
+        _log("SUB", SENSOR_TOPIC, GREEN)
+        _log("PUB", f"{ACTION_TOPIC} ({ACTION_FORMAT})", GREEN)
+        _log("LOG", str(LOG_FILE), GREEN)
         client.subscribe(SENSOR_TOPIC)
     else:
-        _log("MQTT", f"Connection failed — return code: {rc}", RED)
+        _log("ERROR", f"connection failed with rc={rc}", RED)
 
 
 def on_disconnect(client, userdata, rc):
-    """
-    Called automatically when the client disconnects from the broker.
-    If unexpected (rc != 0), it will try to reconnect.
-    """
     if rc == 0:
-        _log("MQTT", "Disconnected cleanly.", YELLOW)
+        _log("MQTT", "disconnected cleanly", YELLOW)
     else:
-        _log("MQTT", f"Unexpected disconnection (rc={rc}). Reconnecting in {RECONNECT_DELAY}s...", RED)
+        _log("MQTT", f"unexpected disconnect rc={rc}; reconnecting in {RECONNECT_DELAY}s", RED)
         time.sleep(RECONNECT_DELAY)
-        # paho-mqtt auto-reconnect is handled by loop_forever()
 
 
 def on_message(client, userdata, msg):
-    """
-    Called automatically every time a message arrives on a subscribed topic.
-    This is the core callback — it:
-      1. Decodes the incoming JSON from ESP32
-      2. Validates required sensor keys
-      3. Calls run_pipeline() to get the action decision
-      4. Strips _meta (not needed by ESP32)
-      5. Publishes the action JSON back to ESP32
-    """
-    print(f"\n{BOLD}{'─'*60}{RESET}")
-    _log("RECV", f"Topic: {msg.topic}", CYAN)
+    _log("RECV", f"{msg.topic} {len(msg.payload)} bytes", CYAN)
 
-    # ── Step 1: Decode JSON safely ────────────────────────────────────────────
     try:
-        payload_str = msg.payload.decode("utf-8")
-        sensor_data = json.loads(payload_str)
-    except (UnicodeDecodeError, json.JSONDecodeError) as e:
-        _log("ERROR", f"Invalid JSON received — skipping. ({e})", RED)
+        payload = json.loads(msg.payload.decode("utf-8"))
+        sensor_data = _validate_sensor_payload(payload)
+    except Exception as exc:
+        _log("ERROR", f"bad sensor payload: {exc}", RED)
         return
 
-    # ── Step 2: Validate required sensor keys ────────────────────────────────
-    missing_keys = [k for k in REQUIRED_KEYS if k not in sensor_data]
-    if missing_keys:
-        _log("ERROR", f"Missing sensor fields: {missing_keys} — skipping.", RED)
+    try:
+        result = run_pipeline(sensor_data, verbose=False)
+    except Exception as exc:
+        _log("ERROR", f"pipeline failed: {exc}", RED)
         return
 
-    # ── Step 3: Log incoming sensor data ─────────────────────────────────────
-    _log("DATA", "Sensor reading received:", GREEN)
-    for key in REQUIRED_KEYS:
-        print(f"         {key:<20}: {sensor_data[key]}")
+    print(format_pipeline_output(result, sensor_data))
 
-    # ── Step 4: Run AI pipeline ───────────────────────────────────────────────
     try:
-        result = run_pipeline(sensor_data, verbose=True)
-    except Exception as e:
-        _log("ERROR", f"Pipeline error — {e}", RED)
-        return
-
-    # ── Step 5: Strip _meta (ESP32 only needs actuator commands) ──────────────
-    action = {k: v for k, v in result.items() if k != "_meta"}
-
-    # ── Step 6: Publish action back to ESP32 ──────────────────────────────────
-    try:
-        action_json = json.dumps(action)
-        client.publish(ACTION_TOPIC, action_json)
-        _log("SEND", f"Action published to [{ACTION_TOPIC}]:", GREEN)
-        for actuator, state in action.items():
-            colour = RED if state in ("ON", "OPEN") else GREEN
-            print(f"         {actuator:<12}: {colour}{BOLD}{state}{RESET}")
-    except Exception as e:
-        _log("ERROR", f"Failed to publish action — {e}", RED)
-
-    # ── Future improvement: log to sensor_log.csv ─────────────────────────────
-    # Uncomment the block below when ready to enable logging:
-    #
-    # import csv, os
-    # LOG_FILE = "data/sensor_log.csv"
-    # os.makedirs("data", exist_ok=True)
-    # file_exists = os.path.isfile(LOG_FILE)
-    # with open(LOG_FILE, "a", newline="") as f:
-    #     writer = csv.DictWriter(f, fieldnames=REQUIRED_KEYS + list(action.keys()) + ["timestamp"])
-    #     if not file_exists:
-    #         writer.writeheader()
-    #     writer.writerow({**sensor_data, **action, "timestamp": time.strftime("%Y-%m-%d %H:%M:%S")})
-
-    print(f"{BOLD}{'─'*60}{RESET}")
+        outgoing = _action_payload(result)
+        client.publish(ACTION_TOPIC, outgoing)
+        _write_log(sensor_data, result)
+        _log("SEND", f"{ACTION_TOPIC}: {outgoing}", GREEN)
+    except Exception as exc:
+        _log("ERROR", f"publish/log failed: {exc}", RED)
 
 
-# =============================================================================
-#  MAIN ENTRY POINT
-# =============================================================================
+def main() -> None:
+    _banner("Adaptive Lab Guardian MQTT bridge", CYAN)
+    _log("INIT", f"connecting to {BROKER}:{PORT}", YELLOW)
 
-def main():
-    """
-    Main function:
-      - Creates the MQTT client
-      - Registers all callbacks
-      - Connects to the broker
-      - Starts the blocking network loop (runs until Ctrl+C)
-    """
-    _banner("Smart Adaptive Environment — MQTT Client", CYAN)
-    _log("INIT", f"Connecting to broker: {BROKER}:{PORT} ...", YELLOW)
-
-    # ── Create client instance ────────────────────────────────────────────────
-    # client_id="" → auto-generate unique ID (avoids conflicts on public broker)
-    client = mqtt.Client(client_id="", clean_session=True)
-
-    # ── Reconnect policy: wait 1s first, max 10s between attempts ────────────
+    client = mqtt.Client(client_id=os.getenv("ALG_MQTT_CLIENT_ID", ""), clean_session=True)
     client.reconnect_delay_set(min_delay=1, max_delay=10)
-
-    # ── Register callbacks ────────────────────────────────────────────────────
-    client.on_connect    = on_connect
+    client.on_connect = on_connect
     client.on_disconnect = on_disconnect
-    client.on_message    = on_message
+    client.on_message = on_message
 
-    # ── Connect to broker ─────────────────────────────────────────────────────
     try:
         client.connect(BROKER, PORT, keepalive=60)
-    except Exception as e:
-        _log("ERROR", f"Cannot reach broker: {e}", RED)
-        _log("HINT",  "Check your internet connection or broker address.", YELLOW)
+    except Exception as exc:
+        _log("ERROR", f"cannot reach broker: {exc}", RED)
         return
 
-    # ── Start blocking network loop ───────────────────────────────────────────
-    # loop_forever():
-    #   ✔ keeps connection alive
-    #   ✔ handles automatic reconnect on drop
-    #   ✔ blocks here until Ctrl+C
     try:
-        _log("LOOP", "Entering network loop — press Ctrl+C to stop.\n", YELLOW)
         client.loop_forever()
     except KeyboardInterrupt:
-        _banner("🛑  Shutting down MQTT client...", YELLOW)
+        _banner("Stopping MQTT bridge", YELLOW)
         client.disconnect()
-        _log("BYE", "Disconnected cleanly. Goodbye!", GREEN)
 
-
-# =============================================================================
-#  ENTRY POINT
-# =============================================================================
 
 if __name__ == "__main__":
     main()

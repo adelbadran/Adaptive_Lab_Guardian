@@ -1,0 +1,674 @@
+{
+  "data_path": "D:\\FAI\\Projects\\GA_NN_Project\\adaptive_lab_guardian\\data\\Adaptive_Lab_Guardian.csv",
+  "train_rows": 8064,
+  "test_rows": 2016,
+  "feature_cols": [
+    "Temp_C",
+    "Humidity_pct",
+    "Gas_AQI",
+    "Light_Lux",
+    "Motion_Detected"
+  ],
+  "art2_categories": 5,
+  "pca_explained_variance_ratio": [
+    0.7266,
+    0.1557,
+    0.0908
+  ],
+  "pca_total_explained_variance": 0.9731,
+  "class_balance": {
+    "risk_before": {
+      "0": 3458,
+      "1": 3071,
+      "2": 1535
+    },
+    "risk_after_smote": {
+      "0": 3458,
+      "1": 3458,
+      "2": 3458
+    },
+    "scenario_before": {
+      "0": 3458,
+      "1": 3071,
+      "2": 958,
+      "3": 577
+    },
+    "scenario_after_smote": {
+      "0": 3458,
+      "1": 3458,
+      "2": 3458,
+      "3": 3458
+    }
+  },
+  "scenario_labels": {
+    "0": "Normal",
+    "1": "Crowded",
+    "2": "Chemical",
+    "3": "Security"
+  },
+  "scenario_profiles": {
+    "full": {
+      "0": {
+        "raw_label": 1,
+        "name": "Normal",
+        "count": 4340,
+        "pct": 43.06,
+        "features": {
+          "Temp_C": {
+            "min": 22.13,
+            "q25": 23.62,
+            "mean": 25.37,
+            "q75": 25.96,
+            "max": 34.68
+          },
+          "Humidity_pct": {
+            "min": 45.56,
+            "q25": 60.6,
+            "mean": 61.56,
+            "q75": 64.44,
+            "max": 65.0
+          },
+          "Gas_AQI": {
+            "min": 57.72,
+            "q25": 64.08,
+            "mean": 68.77,
+            "q75": 70.42,
+            "max": 131.13
+          },
+          "Light_Lux": {
+            "min": 0.0,
+            "q25": 0.0,
+            "mean": 1573.99,
+            "q75": 232.77,
+            "max": 19194.9
+          },
+          "Motion_Detected": {
+            "min": 0.0,
+            "q25": 0.0,
+            "mean": 0.03,
+            "q75": 0.0,
+            "max": 1.0
+          }
+        }
+      },
+      "1": {
+        "raw_label": 2,
+        "name": "Crowded",
+        "count": 3994,
+        "pct": 39.62,
+        "features": {
+          "Temp_C": {
+            "min": 22.32,
+            "q25": 26.14,
+            "mean": 32.34,
+            "q75": 37.51,
+            "max": 40.05
+          },
+          "Humidity_pct": {
+            "min": 38.13,
+            "q25": 44.85,
+            "mean": 51.9,
+            "q75": 60.4,
+            "max": 65.0
+          },
+          "Gas_AQI": {
+            "min": 57.08,
+            "q25": 65.62,
+            "mean": 80.82,
+            "q75": 87.8,
+            "max": 180.69
+          },
+          "Light_Lux": {
+            "min": 0.0,
+            "q25": 33581.7,
+            "mean": 54004.16,
+            "q75": 77486.93,
+            "max": 85759.4
+          },
+          "Motion_Detected": {
+            "min": 0.0,
+            "q25": 0.0,
+            "mean": 0.09,
+            "q75": 0.0,
+            "max": 1.0
+          }
+        }
+      },
+      "2": {
+        "raw_label": 3,
+        "name": "Chemical",
+        "count": 958,
+        "pct": 9.5,
+        "features": {
+          "Temp_C": {
+            "min": 22.89,
+            "q25": 29.95,
+            "mean": 34.17,
+            "q75": 38.8,
+            "max": 40.4
+          },
+          "Humidity_pct": {
+            "min": 38.8,
+            "q25": 43.17,
+            "mean": 49.32,
+            "q75": 55.23,
+            "max": 65.0
+          },
+          "Gas_AQI": {
+            "min": 70.5,
+            "q25": 84.67,
+            "mean": 107.79,
+            "q75": 124.9,
+            "max": 185.43
+          },
+          "Light_Lux": {
+            "min": 0.0,
+            "q25": 63676.08,
+            "mean": 66660.91,
+            "q75": 83058.68,
+            "max": 85757.5
+          },
+          "Motion_Detected": {
+            "min": 0.0,
+            "q25": 0.0,
+            "mean": 0.21,
+            "q75": 0.0,
+            "max": 1.0
+          }
+        }
+      },
+      "3": {
+        "raw_label": 4,
+        "name": "Security",
+        "count": 788,
+        "pct": 7.82,
+        "features": {
+          "Temp_C": {
+            "min": 22.34,
+            "q25": 23.1,
+            "mean": 23.63,
+            "q75": 24.12,
+            "max": 25.31
+          },
+          "Humidity_pct": {
+            "min": 59.3,
+            "q25": 63.09,
+            "mean": 63.88,
+            "q75": 65.0,
+            "max": 65.0
+          },
+          "Gas_AQI": {
+            "min": 57.69,
+            "q25": 63.22,
+            "mean": 65.21,
+            "q75": 66.15,
+            "max": 90.04
+          },
+          "Light_Lux": {
+            "min": 0.0,
+            "q25": 0.0,
+            "mean": 51.31,
+            "q75": 85.12,
+            "max": 365.7
+          },
+          "Motion_Detected": {
+            "min": 0.0,
+            "q25": 0.0,
+            "mean": 0.02,
+            "q75": 0.0,
+            "max": 1.0
+          }
+        }
+      }
+    },
+    "train": {
+      "0": {
+        "raw_label": 1,
+        "name": "Normal",
+        "count": 3458,
+        "pct": 42.88,
+        "features": {
+          "Temp_C": {
+            "min": 22.13,
+            "q25": 23.77,
+            "mean": 25.31,
+            "q75": 25.46,
+            "max": 34.68
+          },
+          "Humidity_pct": {
+            "min": 45.56,
+            "q25": 61.0,
+            "mean": 61.67,
+            "q75": 64.37,
+            "max": 65.0
+          },
+          "Gas_AQI": {
+            "min": 57.72,
+            "q25": 64.52,
+            "mean": 69.78,
+            "q75": 71.51,
+            "max": 131.13
+          },
+          "Light_Lux": {
+            "min": 0.0,
+            "q25": 0.0,
+            "mean": 1431.87,
+            "q75": 214.55,
+            "max": 19194.9
+          },
+          "Motion_Detected": {
+            "min": 0.0,
+            "q25": 0.0,
+            "mean": 0.03,
+            "q75": 0.0,
+            "max": 1.0
+          }
+        }
+      },
+      "1": {
+        "raw_label": 2,
+        "name": "Crowded",
+        "count": 3071,
+        "pct": 38.08,
+        "features": {
+          "Temp_C": {
+            "min": 22.32,
+            "q25": 25.66,
+            "mean": 31.98,
+            "q75": 37.42,
+            "max": 40.05
+          },
+          "Humidity_pct": {
+            "min": 38.13,
+            "q25": 44.97,
+            "mean": 52.41,
+            "q75": 61.06,
+            "max": 65.0
+          },
+          "Gas_AQI": {
+            "min": 60.07,
+            "q25": 68.21,
+            "mean": 84.98,
+            "q75": 94.77,
+            "max": 180.69
+          },
+          "Light_Lux": {
+            "min": 0.0,
+            "q25": 32411.05,
+            "mean": 53211.77,
+            "q75": 77933.35,
+            "max": 85759.4
+          },
+          "Motion_Detected": {
+            "min": 0.0,
+            "q25": 0.0,
+            "mean": 0.1,
+            "q75": 0.0,
+            "max": 1.0
+          }
+        }
+      },
+      "2": {
+        "raw_label": 3,
+        "name": "Chemical",
+        "count": 958,
+        "pct": 11.88,
+        "features": {
+          "Temp_C": {
+            "min": 22.89,
+            "q25": 29.95,
+            "mean": 34.17,
+            "q75": 38.8,
+            "max": 40.4
+          },
+          "Humidity_pct": {
+            "min": 38.8,
+            "q25": 43.17,
+            "mean": 49.32,
+            "q75": 55.23,
+            "max": 65.0
+          },
+          "Gas_AQI": {
+            "min": 70.5,
+            "q25": 84.67,
+            "mean": 107.79,
+            "q75": 124.9,
+            "max": 185.43
+          },
+          "Light_Lux": {
+            "min": 0.0,
+            "q25": 63676.08,
+            "mean": 66660.91,
+            "q75": 83058.68,
+            "max": 85757.5
+          },
+          "Motion_Detected": {
+            "min": 0.0,
+            "q25": 0.0,
+            "mean": 0.21,
+            "q75": 0.0,
+            "max": 1.0
+          }
+        }
+      },
+      "3": {
+        "raw_label": 4,
+        "name": "Security",
+        "count": 577,
+        "pct": 7.16,
+        "features": {
+          "Temp_C": {
+            "min": 22.34,
+            "q25": 23.28,
+            "mean": 23.8,
+            "q75": 24.25,
+            "max": 25.31
+          },
+          "Humidity_pct": {
+            "min": 59.3,
+            "q25": 62.8,
+            "mean": 63.71,
+            "q75": 64.96,
+            "max": 65.0
+          },
+          "Gas_AQI": {
+            "min": 57.69,
+            "q25": 63.24,
+            "mean": 65.55,
+            "q75": 66.43,
+            "max": 90.04
+          },
+          "Light_Lux": {
+            "min": 0.0,
+            "q25": 0.0,
+            "mean": 52.46,
+            "q75": 85.5,
+            "max": 365.7
+          },
+          "Motion_Detected": {
+            "min": 0.0,
+            "q25": 0.0,
+            "mean": 0.02,
+            "q75": 0.0,
+            "max": 1.0
+          }
+        }
+      }
+    },
+    "test": {
+      "0": {
+        "raw_label": 1,
+        "name": "Normal",
+        "count": 882,
+        "pct": 43.75,
+        "features": {
+          "Temp_C": {
+            "min": 22.38,
+            "q25": 23.14,
+            "mean": 25.6,
+            "q75": 27.72,
+            "max": 33.61
+          },
+          "Humidity_pct": {
+            "min": 48.11,
+            "q25": 58.19,
+            "mean": 61.15,
+            "q75": 64.74,
+            "max": 65.0
+          },
+          "Gas_AQI": {
+            "min": 58.08,
+            "q25": 62.48,
+            "mean": 64.83,
+            "q75": 66.62,
+            "max": 73.74
+          },
+          "Light_Lux": {
+            "min": 0.0,
+            "q25": 0.0,
+            "mean": 2131.17,
+            "q75": 945.78,
+            "max": 19134.9
+          },
+          "Motion_Detected": {
+            "min": 0.0,
+            "q25": 0.0,
+            "mean": 0.03,
+            "q75": 0.0,
+            "max": 1.0
+          }
+        }
+      },
+      "1": {
+        "raw_label": 2,
+        "name": "Crowded",
+        "count": 923,
+        "pct": 45.78,
+        "features": {
+          "Temp_C": {
+            "min": 22.64,
+            "q25": 30.07,
+            "mean": 33.52,
+            "q75": 37.67,
+            "max": 38.81
+          },
+          "Humidity_pct": {
+            "min": 40.22,
+            "q25": 44.68,
+            "mean": 50.19,
+            "q75": 55.0,
+            "max": 65.0
+          },
+          "Gas_AQI": {
+            "min": 57.08,
+            "q25": 61.8,
+            "mean": 66.97,
+            "q75": 72.09,
+            "max": 87.54
+          },
+          "Light_Lux": {
+            "min": 11769.6,
+            "q25": 38584.6,
+            "mean": 56640.59,
+            "q75": 76109.55,
+            "max": 85186.3
+          },
+          "Motion_Detected": {
+            "min": 0.0,
+            "q25": 0.0,
+            "mean": 0.05,
+            "q75": 0.0,
+            "max": 1.0
+          }
+        }
+      },
+      "3": {
+        "raw_label": 4,
+        "name": "Security",
+        "count": 211,
+        "pct": 10.47,
+        "features": {
+          "Temp_C": {
+            "min": 22.6,
+            "q25": 22.92,
+            "mean": 23.16,
+            "q75": 23.36,
+            "max": 24.2
+          },
+          "Humidity_pct": {
+            "min": 61.09,
+            "q25": 63.91,
+            "mean": 64.36,
+            "q75": 65.0,
+            "max": 65.0
+          },
+          "Gas_AQI": {
+            "min": 59.4,
+            "q25": 63.14,
+            "mean": 64.26,
+            "q75": 65.62,
+            "max": 67.74
+          },
+          "Light_Lux": {
+            "min": 0.0,
+            "q25": 0.0,
+            "mean": 48.17,
+            "q75": 82.0,
+            "max": 286.7
+          },
+          "Motion_Detected": {
+            "min": 0.0,
+            "q25": 0.0,
+            "mean": 0.02,
+            "q75": 0.0,
+            "max": 1.0
+          }
+        }
+      }
+    }
+  },
+  "rbf_centers": 8,
+  "rbf_sigma": 0.984943,
+  "rbf_trend_scale": {
+    "raw_q01": -0.3401,
+    "raw_q99": 0.340534,
+    "fuzzy_min": -5,
+    "fuzzy_max": 5
+  },
+  "risk_guard": {
+    "type": "KNNRiskGuard",
+    "k": 51,
+    "class_weights": [
+      1.0,
+      1.0,
+      1.5,
+      2.0
+    ],
+    "reference_rows": 8064
+  },
+  "som_clusters": [
+    0,
+    1,
+    2,
+    3
+  ],
+  "gnn_attention_edges": 20,
+  "rl_qtable_shape": [
+    4,
+    4
+  ],
+  "ga_policy": {
+    "gas_warning": 0.4452,
+    "temp_warning": 0.6121,
+    "gas_danger": 0.768,
+    "temp_danger": 0.98
+  },
+  "ga_score": 0.4516,
+  "runtime_test": {
+    "rows_tested": 2016,
+    "three_class_accuracy": 0.8616,
+    "four_scenario_accuracy": 0.8621,
+    "som_cluster_accuracy": 0.4851,
+    "false_positive_critical_rate": 0.0575,
+    "false_negative_danger_rate": 0.0759,
+    "false_alert_rate": 0.061,
+    "warning_miss_rate": 0.0015,
+    "scenario_confusion_true_rows_pred_cols": [
+      [
+        761,
+        5,
+        0,
+        116
+      ],
+      [
+        4,
+        919,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        0
+      ],
+      [
+        153,
+        0,
+        0,
+        58
+      ]
+    ],
+    "per_scenario_recall": {
+      "0": {
+        "name": "Normal",
+        "support": 882,
+        "recall": 0.8628
+      },
+      "1": {
+        "name": "Crowded",
+        "support": 923,
+        "recall": 0.9957
+      },
+      "2": {
+        "name": "Chemical",
+        "support": 0,
+        "recall": null
+      },
+      "3": {
+        "name": "Security",
+        "support": 211,
+        "recall": 0.2749
+      }
+    },
+    "predicted_class_counts": {
+      "0": 915,
+      "1": 927,
+      "2": 174
+    },
+    "predicted_scenario_counts": {
+      "0": 918,
+      "1": 924,
+      "3": 174
+    },
+    "predicted_cluster_counts": {
+      "0": 351,
+      "1": 515,
+      "2": 336,
+      "3": 814
+    },
+    "target_class_counts": {
+      "0": 882,
+      "1": 923,
+      "2": 211
+    },
+    "target_scenario_counts": {
+      "0": 882,
+      "1": 923,
+      "3": 211
+    },
+    "target_cluster_counts": {
+      "0": 882,
+      "1": 923,
+      "3": 211
+    },
+    "action_counts": {
+      "ON/ON/OFF/YELLOW": 518,
+      "ON/OFF/OFF/YELLOW": 409,
+      "OFF/OFF/OFF/GREEN": 915,
+      "OFF/ON/ON/RED": 174
+    }
+  },
+  "saved_artifacts": [
+    "scaler.pkl",
+    "pca.pkl",
+    "art2.pkl",
+    "rbf.pkl",
+    "risk_guard.pkl",
+    "som.pkl",
+    "gnn.pkl",
+    "gnn_attention.npy",
+    "rl_qtable.npy",
+    "ga_policy.npy"
+  ]
+}

@@ -1,22 +1,27 @@
-import os
+"""PCA noise-filter helper used by the runtime pipeline."""
+
+from __future__ import annotations
+
+from pathlib import Path
+
 import numpy as np
-import joblib
 
-# load pca model 
-model_path = os.path.join(os.path.dirname(__file__), "models", "pca.pkl")
+try:
+    import joblib
+except Exception:  # pragma: no cover - optional dependency
+    joblib = None
 
-if os.path.exists(model_path):
-    pca = joblib.load(model_path)
-    print("PCA model loaded") 
-else:
-    pca = None
-    print("PCA not found")
 
-    # Function used main.py
-def transform(x: np.ndarray) -> np.ndarray: 
-    """ Input: GNN output 
-        Output: 3 PCA features """
+MODEL_PATH = Path(__file__).resolve().parent / "models" / "pca.pkl"
+pca = joblib.load(MODEL_PATH) if joblib is not None and MODEL_PATH.exists() else None
+
+
+def transform(x: np.ndarray) -> np.ndarray:
+    """Return PCA-filtered features, or a pass-through vector if no model exists."""
+    X = np.asarray(x, dtype=float)
+    if X.ndim == 1:
+        X = X.reshape(1, -1)
+
     if pca is not None:
-        return pca.transform(x)
-    # fallback (if PCA not trained yet)
-    return x[:, :3]
+        return pca.transform(X)
+    return X

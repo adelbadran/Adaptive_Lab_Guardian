@@ -1,0 +1,14 @@
+numpy
+pandas
+scikit-learn
+joblib
+minisom
+scikit-fuzzy
+paho-mqtt
+streamlit
+matplotlib
+networkx
+
+# Optional for trained GNN models:
+# torch
+# torch-geometric

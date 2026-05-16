@@ -1,7 +1,11 @@
 import os
 import pickle
 import numpy as np
-from minisom import MiniSom
+
+try:
+    from minisom import MiniSom
+except Exception:  # pragma: no cover - optional training dependency
+    MiniSom = None
 
 class AdaptiveSomClustering:
     def __init__(self, x_dim: int = 10, y_dim: int = 10, input_len: int = 3, 
@@ -15,6 +19,8 @@ class AdaptiveSomClustering:
         self.input_len = input_len
         self.sigma = sigma
         self.learning_rate = learning_rate
+        if MiniSom is None:
+            raise ImportError("Install minisom before creating AdaptiveSomClustering.")
         
         # Initialize the MiniSom architecture
         self.som = MiniSom(
@@ -52,6 +58,10 @@ class AdaptiveSomClustering:
         # Binary flag encoding -> Maps cleanly into a discrete 0-3 index
         cluster_id = is_lower_half * 2 + is_right_half
         return int(cluster_id)
+
+    def predict(self, x: np.ndarray) -> int:
+        """Compatibility hook for the main pipeline."""
+        return self.predict_cluster(x)
 
     def save_model(self, filepath: str):
         """Serializes and saves the complete SOM instance to disk."""

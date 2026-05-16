@@ -3,10 +3,15 @@
 # =============================================================================
 
 import numpy as np
-from sklearn.cluster import KMeans
-from sklearn.preprocessing import MinMaxScaler
 import pickle
 import os
+
+try:
+    from sklearn.cluster import KMeans
+    from sklearn.preprocessing import MinMaxScaler
+except Exception:  # pragma: no cover - optional training dependency
+    KMeans = None
+    MinMaxScaler = None
 
 
 # =============================================================================
@@ -18,7 +23,8 @@ def gaussian_vectorized(X: np.ndarray, centers: np.ndarray, sigma: float) -> np.
     """
     # حساب المسافات الإقليدية المربعة بين كل العينات وكل المراكز دفعة واحدة
     # X shape: [N, Features], centers shape: [K, Features]
-    dists = np.sum(X_extended := X[:, np.newaxis, :] - centers[np.newaxis, :, :], axis=2) ** 2
+    diff = X[:, np.newaxis, :] - centers[np.newaxis, :, :]
+    dists = np.sum(diff ** 2, axis=2)
     return np.exp(-dists / (2 * sigma ** 2))
 
 
@@ -35,10 +41,12 @@ class RBFModel:
         self.sigma = sigma
         self.centers = None
         self.W = None
-        self.scaler = MinMaxScaler(feature_range=(-5, 5))
+        self.scaler = MinMaxScaler(feature_range=(-5, 5)) if MinMaxScaler is not None else None
 
     def fit(self, X: np.ndarray):
         """تدريب الموديل وحساب الأوزان والمراكز هندسياً"""
+        if KMeans is None or self.scaler is None:
+            raise ImportError("Install scikit-learn before training RBFModel.")
         X_train, y_train_raw = [], []
 
         # حساب الفروقات الزمنية للاتجاه (Trend Tracking)
@@ -68,6 +76,8 @@ class RBFModel:
 
     def predict(self, X: np.ndarray) -> np.ndarray:
         """التنبؤ بالاتجاه القادم لعينة أو عدة عينات ممررة من الـ PCA"""
+        if self.centers is None or self.W is None:
+            raise ValueError("RBFModel must be fitted before predict().")
         if len(X.shape) == 1:
             X = X.reshape(1, -1)
 

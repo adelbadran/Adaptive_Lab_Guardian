@@ -64,6 +64,10 @@ class SimpleART2:
             
         return float(anomaly_score)
 
+    def is_new_pattern(self, x: np.ndarray, threshold: float = 0.35) -> bool:
+        """Pipeline hook returning True when the ART2 score is anomalous."""
+        return self.compute_anomaly_score(x) >= threshold
+
     def save_model(self, filepath: str):
         """Serializes and saves the ART2 model state to disk."""
         os.makedirs(os.path.dirname(filepath), exist_ok=True)
@@ -80,3 +84,16 @@ class SimpleART2:
             model = pickle.load(f)
         print(f"[SUCCESS] ART2 configuration restored smoothly from: {filepath}")
         return model
+
+
+_default_model = SimpleART2()
+
+
+def compute_anomaly_score(x: np.ndarray) -> float:
+    """Module-level convenience hook used by ai.main when no pickle exists."""
+    return _default_model.compute_anomaly_score(x)
+
+
+def is_new_pattern(x: np.ndarray, threshold: float = 0.35) -> bool:
+    """Module-level convenience hook used by ai.main."""
+    return _default_model.is_new_pattern(x, threshold=threshold)

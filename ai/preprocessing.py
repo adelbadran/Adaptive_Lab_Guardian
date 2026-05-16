@@ -1,5 +1,6 @@
 import pandas as pd
 import numpy as np
+import os
 from sklearn.preprocessing import MinMaxScaler, LabelEncoder
 from sklearn.utils import resample
 
@@ -186,7 +187,11 @@ def preprocess_data(csv_path: str, oversample_train: bool = False):
 #  STANDALONE TEST  (run:  python preprocessing.py)
 # =============================================================================
 if __name__ == "__main__":
-    CSV_PATH = r"C:\Adaptive Lab Guardian\data\Adaptive_Lab_Guardian.csv"  
+    CSV_PATH = os.path.join(
+        os.path.dirname(os.path.dirname(__file__)),
+        "data",
+        "Adaptive_Lab_Guardian.csv",
+    )
 
     X_train, X_test, y_train, y_test, scaler, le, feature_cols = preprocess_data(
         csv_path=CSV_PATH,
