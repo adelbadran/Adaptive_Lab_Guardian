@@ -406,6 +406,11 @@ def step_fuzzy(context: dict[str, Any]) -> tuple[dict[str, str], dict[str, Any]]
     )
     risk_score = float(np.clip(risk_score, 0.0, 100.0))
 
+    # GNN Direct Impact Override: If GNN detects a very high spatial correlation (like a cascading failure),
+    # it forces the risk score up, showing its extreme importance in the pipeline.
+    if context.get("spatial_risk", 0.0) > 0.65:
+        risk_score = max(risk_score, 75.0)
+
     security_signature = (
         context["cluster_id"] == 3
         or (context.get("motion", 0.0) >= 0.5 and context.get("light_level", 1.0) < 0.35)
@@ -571,6 +576,7 @@ def run_pipeline(sensor_data: dict[str, Any], scaler=None, verbose: bool = True)
     trend = float(rbf_out["trend"])
     raw_trend = float(rbf_out.get("raw_trend", trend))
     spatial_risk, attention = step_gnn(x_filtered)
+    log("02.GNN", f"Graph Neural Network evaluated spatial relationships. Spatial Risk = {spatial_risk:.4f}")
     som_cluster_id = int(np.clip(step_som(x_filtered, x_scaled), 0, 3))
     guard = step_risk_guard(x_scaled)
     decision_cluster_id = int(guard["scenario_class"]) if float(guard["confidence"]) >= 0.34 else som_cluster_id

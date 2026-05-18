@@ -702,14 +702,54 @@ export default function Dashboard() {
                             <span className="text-[9px] font-tech text-blue-600 bg-blue-50/50 border border-blue-200 px-2 py-0.5 rounded font-bold">GNN</span>
                             <span className="text-[9px] font-bold text-slate-400 font-mono">SPATIAL ESTIMATION</span>
                           </div>
-                          <p className="text-[11px] font-semibold text-slate-700 mb-1">Graph Neural Network</p>
-                          <p className="text-[9px] text-slate-500 leading-relaxed">
-                            Executes spatial graph convolutional operations across heterogeneous environmental sensor nodes. Predicts localized thermodynamic and chemical hazard propagation gradients with real-time topological path analysis.
-                          </p>
+                          
+                          <div className="relative w-full h-[120px] my-1">
+                            {(() => {
+                              const risk = meta.spatial_risk || 0;
+                              const intensity = Math.min(1, risk * 1.5);
+                              const color = risk > 0.65 ? '#ef4444' : risk > 0.4 ? '#f59e0b' : '#3b82f6';
+                              const nodes = [
+                                { x: 50, y: 15, label: 'TMP' },
+                                { x: 85, y: 40, label: 'HUM' },
+                                { x: 72, y: 80, label: 'GAS' },
+                                { x: 28, y: 80, label: 'LUX' },
+                                { x: 15, y: 40, label: 'MOT' },
+                              ];
+                              return (
+                                <div className="absolute inset-0 flex items-center justify-center">
+                                  <svg viewBox="0 0 100 100" className="w-full h-full max-w-[120px] overflow-visible">
+                                    {nodes.map((n1, i) => 
+                                      nodes.slice(i + 1).map((n2, j) => (
+                                        <line
+                                          key={`edge-${i}-${j}`}
+                                          x1={n1.x} y1={n1.y}
+                                          x2={n2.x} y2={n2.y}
+                                          stroke={color}
+                                          strokeWidth={0.5 + intensity * 2}
+                                          opacity={0.15 + intensity * 0.5}
+                                          className={intensity > 0.5 ? "animate-pulse" : ""}
+                                        />
+                                      ))
+                                    )}
+                                    {nodes.map((n, i) => (
+                                      <g key={`node-${i}`}>
+                                        <circle cx={n.x} cy={n.y} r={9} fill="white" stroke={color} strokeWidth={1.5} />
+                                        <text x={n.x} y={n.y + 2} fontSize="5" fontWeight="bold" fill="#475569" textAnchor="middle">
+                                          {n.label}
+                                        </text>
+                                      </g>
+                                    ))}
+                                  </svg>
+                                </div>
+                              );
+                            })()}
+                          </div>
                         </div>
-                        <div className="mt-4 pt-3 border-t border-slate-200/50 flex justify-between text-[8px] font-mono">
-                          <span className="text-slate-400">INPUTS: T_C, H_pct, Gas_AQI</span>
-                          <span className="font-bold text-emerald-600">ACTIVE // NOMINAL</span>
+                        <div className="mt-2 pt-3 border-t border-slate-200/50 flex justify-between text-[8px] font-mono">
+                          <span className="text-slate-400">NODES: 5 | EDGES: 10</span>
+                          <span className={cn("font-bold", (meta.spatial_risk || 0) > 0.65 ? "text-rose-600" : "text-emerald-600")}>
+                            SPATIAL RISK: {formatNumber(meta.spatial_risk, 2)}
+                          </span>
                         </div>
                       </div>
 
@@ -818,6 +858,24 @@ export default function Dashboard() {
                         <div className="mt-4 pt-3 border-t border-slate-200/50 flex justify-between text-[8px] font-mono">
                           <span className="text-slate-400">COMPONENTS: 2 PRINCIPAL AXES</span>
                           <span className="font-bold text-slate-600">EXPLAINED: {formatNumber(metrics.pcaExplained, 1)}%</span>
+                        </div>
+                      </div>
+
+                      {/* GA Card */}
+                      <div className="bg-slate-50/40 border border-brand-border rounded-xl p-4 flex flex-col justify-between hover:border-slate-300 transition-all duration-300">
+                        <div>
+                          <div className="flex items-center justify-between gap-2 mb-2">
+                            <span className="text-[9px] font-tech text-pink-600 bg-pink-50/50 border border-pink-200 px-2 py-0.5 rounded font-bold">GA</span>
+                            <span className="text-[9px] font-bold text-slate-400 font-mono">THRESHOLD EVOLUTION</span>
+                          </div>
+                          <p className="text-[11px] font-semibold text-slate-700 mb-1">Genetic Algorithm</p>
+                          <p className="text-[9px] text-slate-500 leading-relaxed">
+                            Simulates natural selection to dynamically evolve risk boundaries and state thresholds. Mutates decision parameters over generations to perfectly adapt the fuzzy logic boundaries to the specific laboratory environment.
+                          </p>
+                        </div>
+                        <div className="mt-4 pt-3 border-t border-slate-200/50 flex justify-between text-[8px] font-mono">
+                          <span className="text-slate-400">FITNESS: ADAPTIVE</span>
+                          <span className="font-bold text-pink-600 animate-pulse">GENERATION: ACTIVE</span>
                         </div>
                       </div>
                     </div>
