@@ -528,10 +528,10 @@
     }
   },
   "rbf_centers": 8,
-  "rbf_sigma": 0.984943,
+  "rbf_sigma": 1.0,
   "rbf_trend_scale": {
-    "raw_q01": -0.3401,
-    "raw_q99": 0.340534,
+    "raw_q01": -0.05,
+    "raw_q99": 0.05,
     "fuzzy_min": -5,
     "fuzzy_max": 5
   },
@@ -547,10 +547,7 @@
     "reference_rows": 8064
   },
   "som_clusters": [
-    0,
-    1,
-    2,
-    3
+    0
   ],
   "gnn_attention_edges": 20,
   "rl_qtable_shape": [
@@ -566,19 +563,19 @@
   "ga_score": 0.4516,
   "runtime_test": {
     "rows_tested": 2016,
-    "three_class_accuracy": 0.8616,
-    "four_scenario_accuracy": 0.8621,
-    "som_cluster_accuracy": 0.4851,
-    "false_positive_critical_rate": 0.0575,
-    "false_negative_danger_rate": 0.0759,
-    "false_alert_rate": 0.061,
+    "three_class_accuracy": 0.8636,
+    "four_scenario_accuracy": 0.8641,
+    "som_cluster_accuracy": 0.2679,
+    "false_positive_critical_rate": 0.0506,
+    "false_negative_danger_rate": 0.0809,
+    "false_alert_rate": 0.0541,
     "warning_miss_rate": 0.0015,
     "scenario_confusion_true_rows_pred_cols": [
       [
-        761,
+        775,
         5,
         0,
-        116
+        102
       ],
       [
         4,
@@ -593,17 +590,17 @@
         0
       ],
       [
-        153,
+        163,
         0,
         0,
-        58
+        48
       ]
     ],
     "per_scenario_recall": {
       "0": {
         "name": "Normal",
         "support": 882,
-        "recall": 0.8628
+        "recall": 0.8787
       },
       "1": {
         "name": "Crowded",
@@ -618,24 +615,24 @@
       "3": {
         "name": "Security",
         "support": 211,
-        "recall": 0.2749
+        "recall": 0.2275
       }
     },
     "predicted_class_counts": {
-      "0": 915,
+      "0": 939,
       "1": 927,
-      "2": 174
+      "2": 150
     },
     "predicted_scenario_counts": {
-      "0": 918,
+      "0": 942,
       "1": 924,
-      "3": 174
+      "3": 150
     },
     "predicted_cluster_counts": {
-      "0": 351,
-      "1": 515,
-      "2": 336,
-      "3": 814
+      "0": 439,
+      "1": 366,
+      "2": 48,
+      "3": 1163
     },
     "target_class_counts": {
       "0": 882,
@@ -654,8 +651,8 @@
     },
     "action_counts": {
       "ON/OFF/OFF/YELLOW": 927,
-      "OFF/OFF/OFF/GREEN": 915,
-      "OFF/ON/ON/RED": 174
+      "OFF/OFF/OFF/GREEN": 939,
+      "OFF/ON/ON/RED": 150
     }
   },
   "saved_artifacts": [
