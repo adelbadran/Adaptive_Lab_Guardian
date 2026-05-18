@@ -22,7 +22,7 @@ except Exception:  # pragma: no cover - optional dependency
 
 
 ACTION_SAFE = {"fan": "OFF", "alarm": "OFF", "servo": "CLOSED", "buzzer": "OFF", "rgb_led": "GREEN"}
-ACTION_WARNING = {"fan": "ON", "alarm": "OFF", "servo": "OPEN", "buzzer": "OFF", "rgb_led": "YELLOW"}
+ACTION_WARNING = {"fan": "ON", "alarm": "OFF", "servo": "CLOSED", "buzzer": "OFF", "rgb_led": "YELLOW"}
 ACTION_CRITICAL = {"fan": "ON", "alarm": "ON", "servo": "OPEN", "buzzer": "ON", "rgb_led": "RED"}
 ACTION_SECURITY = {"fan": "OFF", "alarm": "ON", "servo": "CLOSED", "buzzer": "ON", "rgb_led": "RED"}
 
@@ -163,15 +163,9 @@ def _action_from_decision(decision: dict[str, Any], motion: float, gas_level: fl
         return ACTION_CRITICAL.copy()
 
     if risk == "Warning":
-        action = ACTION_WARNING.copy()
-        if scenario in {"Chemical", "Hazardous", "Breach"} or gas_level > 0.55 or temp_level > 0.70:
-            action["alarm"] = "ON"
-        return action
+        return ACTION_WARNING.copy()
 
-    action = ACTION_SAFE.copy()
-    if motion > 0.5:
-        action["servo"] = "OPEN"
-    return action
+    return ACTION_SAFE.copy()
 
 
 @lru_cache(maxsize=1)

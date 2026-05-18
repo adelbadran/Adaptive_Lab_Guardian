@@ -373,11 +373,13 @@ def step_som(x_filtered: np.ndarray, x_scaled: np.ndarray) -> int:
                 pass
 
     temp, gas, light, motion = scaled[0], scaled[2], scaled[3], scaled[4]
-    if motion > 0.5 and light < 0.15 and gas < 0.45:
+    
+    # BREACH: lenient with other readings. Just motion + low light
+    if motion >= 0.5 and light < 0.35:
         return 3
     if gas > 0.62 or temp > 0.72:
         return 2
-    if gas > 0.35 or temp > 0.55 or motion > 0.5:
+    if gas > 0.35 or temp > 0.55 or motion >= 0.5:
         return 1
     return 0
 
@@ -392,38 +394,56 @@ def step_fuzzy(context: dict[str, Any]) -> tuple[dict[str, str], dict[str, Any]]
         except Exception:
             pass
 
+    # GNN's spatial_risk weight increased to 25.0 so it has a major impact on the final risk score
     risk_score = (
         100.0 * context["anomaly_score"] * 0.35
         + max(context["trend"], 0.0) * 12.0
         + context["cluster_id"] * 18.0
         + context["gas_level"] * 30.0
         + context["temp_level"] * 20.0
-        + context["spatial_risk"] * 15.0
+        + context["spatial_risk"] * 25.0  # Increased GNN Impact
         + context.get("guard_risk_class", 0) * context.get("guard_confidence", 0.0) * 18.0
     )
     risk_score = float(np.clip(risk_score, 0.0, 100.0))
 
     security_signature = (
-        context.get("light_level", 1.0) <= 0.015
-        and context.get("humidity_level", 0.0) >= 0.82
-        and context.get("temp_level", 1.0) <= 0.18
-        and context.get("guard_risk_class", 0) >= 1
+        context["cluster_id"] == 3
+        or (context.get("motion", 0.0) >= 0.5 and context.get("light_level", 1.0) < 0.35)
     )
 
-    if risk_score >= 70 or context.get("guard_risk_class", 0) >= 2 or security_signature:
+    # GA Policy Integration: The Genetic Algorithm optimizes these thresholds based on environment evolution
+    policy = context.get("threshold_policy")
+    if not isinstance(policy, dict):
+        policy = {"critical": 70, "warning": 40, "safe_max": 50}
+    
+    crit_thresh = policy.get("critical", 70)
+    warn_thresh = policy.get("warning", 40)
+    safe_max_thresh = policy.get("safe_max", 50)
+
+    if security_signature:
+        action = {"fan": "OFF", "alarm": "ON", "servo": "CLOSED", "buzzer": "ON", "rgb_led": "RED"}
+        risk = "Critical"
+        scenario = "Breach"
+    elif risk_score >= crit_thresh or context.get("guard_risk_class", 0) >= 2 or context["cluster_id"] == 2:
         action = {"fan": "ON", "alarm": "ON", "servo": "OPEN", "buzzer": "ON", "rgb_led": "RED"}
         risk = "Critical"
-    elif risk_score >= 40 or context.get("guard_risk_class", 0) >= 1:
-        action = {"fan": "ON", "alarm": "OFF", "servo": "OPEN", "buzzer": "OFF", "rgb_led": "YELLOW"}
-        risk = "Warning"
+        scenario = "Chemical"
+    elif risk_score >= warn_thresh or context.get("guard_risk_class", 0) >= 1 or context["cluster_id"] == 1:
+        if context["cluster_id"] == 0 and risk_score < safe_max_thresh and context.get("guard_risk_class", 0) == 0:
+            action = DEFAULT_ACTION.copy()
+            risk = "Safe"
+            scenario = "Normal"
+        else:
+            action = {"fan": "ON", "alarm": "OFF", "servo": "CLOSED", "buzzer": "OFF", "rgb_led": "YELLOW"}
+            risk = "Warning"
+            scenario = "Crowded"
     else:
         action = DEFAULT_ACTION.copy()
-        if context["motion"] > 0.5:
-            action["servo"] = "OPEN"
         risk = "Safe"
+        scenario = "Normal"
 
     return action, {
-        "scenario": "Breach" if security_signature else SOM_CLUSTER_LABELS.get(context["cluster_id"], "Unknown"),
+        "scenario": scenario,
         "risk": risk,
         "risk_score": risk_score,
         "security_signature": security_signature,
@@ -432,6 +452,9 @@ def step_fuzzy(context: dict[str, Any]) -> tuple[dict[str, str], dict[str, Any]]
 
 def step_rl(cluster_id: int, action: dict[str, str], reward: float, context: dict[str, Any]) -> dict[str, str]:
     """RL agent refinement after fuzzy baseline."""
+    refined_action = _sanitize_action(action)
+    
+    # 1. External RL Module (if loaded)
     if rl_mod is not None and hasattr(rl_mod, "update"):
         try:
             return _sanitize_action(rl_mod.update(cluster_id, action, reward, context=context))
@@ -442,7 +465,24 @@ def step_rl(cluster_id: int, action: dict[str, str], reward: float, context: dic
                 pass
         except Exception:
             pass
-    return _sanitize_action(action)
+
+    # 2. RL Learned Policy Application (Fallback/Embedded Q-Table)
+    # RL learns from the 'reward' signal over time. If the Q-Table exists, we apply its overrides.
+    if isinstance(rl_table, dict):
+        state_key = f"{cluster_id}_{context.get('risk', 'Safe')}"
+        if state_key in rl_table:
+            override = rl_table[state_key]
+            for k, v in override.items():
+                if k in refined_action:
+                    refined_action[k] = str(v).upper()
+
+    # If the system is Safe, but temperature is slightly elevated, the RL agent 
+    # might learn to turn on the fan proactively to maximize the long-term reward.
+    # However, to maintain strict 'Normal' behavior, we leave the action as is.
+    if context.get("risk") == "Safe" and context.get("temp_level", 0.0) > 0.55:
+        pass # Action left as DEFAULT_ACTION to ensure "Normal" behaves normally
+        
+    return refined_action
 
 
 def compute_reward(cluster_id: int, action: dict[str, str], context: dict[str, Any]) -> float:

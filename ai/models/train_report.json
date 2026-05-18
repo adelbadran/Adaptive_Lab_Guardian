@@ -1,5 +1,5 @@
 {
-  "data_path": "D:\\FAI\\Projects\\GA_NN_Project\\adaptive_lab_guardian\\data\\Adaptive_Lab_Guardian.csv",
+  "data_path": "D:\\FAI\\Projects\\GA_NN_Project\\Adaptive_Lab_Guardian\\data\\Adaptive_Lab_Guardian.csv",
   "train_rows": 8064,
   "test_rows": 2016,
   "feature_cols": [
@@ -653,8 +653,7 @@
       "3": 211
     },
     "action_counts": {
-      "ON/ON/OFF/YELLOW": 518,
-      "ON/OFF/OFF/YELLOW": 409,
+      "ON/OFF/OFF/YELLOW": 927,
       "OFF/OFF/OFF/GREEN": 915,
       "OFF/ON/ON/RED": 174
     }

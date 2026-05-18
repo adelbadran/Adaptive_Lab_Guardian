@@ -1,0 +1,42 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Michroma&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-tech: "Michroma", "Inter", sans-serif;
+  
+  --color-brand-bg: #FBFBFC;
+  --color-brand-border: rgba(0, 0, 0, 0.05);
+  --color-brand-accent: #3b82f6; 
+  --color-brand-success: #10b981;
+}
+
+@layer base {
+  body {
+    @apply bg-brand-bg text-slate-800 font-sans antialiased;
+  }
+}
+
+@layer components {
+  .glass {
+    @apply bg-[#F8F9FA]/70 backdrop-blur-md border border-brand-border shadow-[0_4px_20px_-2px_rgba(0,0,0,0.04)] rounded-xl;
+  }
+  
+  .tech-font {
+    @apply font-tech text-[10px] uppercase tracking-[0.15em] font-bold;
+  }
+}
+
+.grid-pattern {
+  background-image: radial-gradient(#e5e7eb 0.5px, transparent 0.5px);
+  background-size: 20px 20px;
+}
+
+.pulse {
+  animation: pulse-anim 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes pulse-anim {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}

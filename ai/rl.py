@@ -10,8 +10,8 @@ import numpy as np
 
 ACTION_TEMPLATES = [
     {"fan": "OFF", "alarm": "OFF", "servo": "CLOSED", "buzzer": "OFF", "rgb_led": "GREEN"},
-    {"fan": "ON", "alarm": "OFF", "servo": "OPEN", "buzzer": "OFF", "rgb_led": "YELLOW"},
-    {"fan": "ON", "alarm": "ON", "servo": "OPEN", "buzzer": "OFF", "rgb_led": "RED"},
+    {"fan": "ON", "alarm": "OFF", "servo": "CLOSED", "buzzer": "OFF", "rgb_led": "YELLOW"},
+    {"fan": "ON", "alarm": "ON", "servo": "OPEN", "buzzer": "ON", "rgb_led": "RED"},
     {"fan": "ON", "alarm": "ON", "servo": "OPEN", "buzzer": "ON", "rgb_led": "RED"},
 ]
 
