@@ -32,19 +32,16 @@
 ### 1. Primary Operation Center
 Core dashboard interface with real-time WebGL canvas, system control toggles, and live log stream:
 
-> 📷 **Screenshot** — Place `dashboard_overview.png` in `docs/screenshots/`
 ![Adaptive Lab Guardian — Dashboard Overview](./docs/screenshots/dashboard_overview.png)
 
 ### 2. Neural Pipeline Performance Directory
 Validation matrices, model topology structures, and training accuracy rings:
 
-> 📷 **Screenshot** — Place `neural_pipeline_metrics.png` in `docs/screenshots/`
 ![Neural Pipeline Performance Metrics](./docs/screenshots/neural_pipeline_metrics.png)
 
 ### 3. WebGL Digital Twin & Dynamic Island HUD
 3D lab environment with the context-aware Dynamic Island status pill:
 
-> 📷 **Screenshot** — Place `digital_twin_view.png` in `docs/screenshots/`
 ![3D Digital Twin Viewer & Dynamic Island](./docs/screenshots/digital_twin_view.png)
 
 ---
