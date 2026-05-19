@@ -1,0 +1,23 @@
+[33m1d8398a[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m Final ان شاء الله
+[33m3536333[m Final Version
+[33mc1f85af[m Final Version
+[33m3c2d912[m Final Version
+[33m84dde2b[m Final Project
+[33m2ba9978[m Models Done
+[33m4a4f3e8[m Intial
+[33mcad9e5f[m Rename preprocessing.py to ai/preprocessing.py
+[33m991db42[m Rename mqtt_client.py to ai/mqtt_client.py
+[33mc971bfd[m Rename main.py to ai/main.py
+[33m66faa5a[m Add files via upload
+[33m90081fa[m Delete ai/mqtt_client.py
+[33m0866f8f[m Delete ai/main.py
+[33m8763e72[m Delete ai/preprocessing.py
+[33m42bbe91[m Rename app.py to dashboard/app.py
+[33mdab0072[m Add files via upload
+[33md35e1f5[m Delete dashboard/app.py
+[33m21ad7d5[m Add dataset
+[33m8584afb[m Add Dataset
+[33m53602a1[m Add Dataset
+[33m9a355d7[m add Dataset
+[33m92b429a[m[33m ([m[1;31morigin/feature/sensor-relations-pca[m[33m, [m[1;31morigin/feature/data-cleaning-dashboard[m[33m, [m[1;31morigin/feature/anomaly-classification[m[33m)[m Complete project structure setup
+[33m8e34b33[m Initial commit: Project structure

@@ -1,7 +1,18 @@
 """Train and save all Adaptive Lab Guardian runtime models.
 
-This script uses real libraries (scikit-learn, minisom, imblearn, pytorch)
-for the models and integrates with the custom components from ai.main.
+This script is intentionally NumPy/Pandas-only so the project can train in a
+minimal environment. Saved artifacts are compatible with ai.main:
+
+- scaler.pkl
+- pca.pkl
+- art2.pkl
+- rbf.pkl
+- som.pkl
+- gnn.pkl
+- gnn_attention.npy
+- rl_qtable.npy
+- ga_policy.npy
+- train_report.json
 """
 
 from __future__ import annotations
@@ -9,6 +20,7 @@ from __future__ import annotations
 import json
 import pickle
 import sys
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
@@ -49,57 +61,60 @@ if __name__ == "__main__":
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
-if str(PROJECT_ROOT) not in sys.path:
-    sys.path.insert(0, str(PROJECT_ROOT))
 DATA_PATH = PROJECT_ROOT / "data" / "Adaptive_Lab_Guardian.csv"
 MODELS_DIR = Path(__file__).resolve().parent / "models"
 
 
-def _save_pickle(obj: Any, path: Path) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    with path.open("wb") as f:
-        pickle.dump(obj, f)
+@dataclass
+class SimpleMinMaxScaler:
+    data_min_: np.ndarray
+    data_max_: np.ndarray
+
+    def transform(self, X: np.ndarray) -> np.ndarray:
+        X = np.asarray(X, dtype=float)
+        denom = np.where((self.data_max_ - self.data_min_) == 0, 1.0, self.data_max_ - self.data_min_)
+        return np.clip((X - self.data_min_) / denom, 0.0, 1.0)
 
 
-def _load_data(csv_path: Path) -> pd.DataFrame:
-    df = pd.read_csv(csv_path)
-    required = ["Timestamp", *FEATURE_COLS, "True_Scenario"]
-    missing = [col for col in required if col not in df.columns]
-    if missing:
-        raise ValueError(f"Missing required columns: {missing}")
+@dataclass
+class SimplePCAModel:
+    mean_: np.ndarray
+    components_: np.ndarray
+    explained_variance_ratio_: np.ndarray
 
-    df["Timestamp"] = pd.to_datetime(df["Timestamp"], errors="coerce")
-    df = df.dropna(subset=["Timestamp"]).sort_values("Timestamp").reset_index(drop=True)
-    df[FEATURE_COLS] = df[FEATURE_COLS].ffill().bfill()
-    return df
-
-
-def _fit_scaler(X_train_raw: np.ndarray):
-    scaler = MinMaxScaler()
-    scaler.fit(X_train_raw)
-    return scaler
+    def transform(self, X: np.ndarray) -> np.ndarray:
+        X = np.asarray(X, dtype=float)
+        if X.ndim == 1:
+            X = X.reshape(1, -1)
+        return (X - self.mean_) @ self.components_.T
 
 
-def _fit_pca(X_train: np.ndarray, n_components: int = 3):
-    pca = PCA(n_components=n_components)
-    pca.fit(X_train)
-    return pca
+@dataclass
+class NumpyRBFTrendModel:
+    centers: np.ndarray
+    sigma: float
+    weights: np.ndarray
+    target_low: float = -0.05
+    target_high: float = 0.05
 
+    def predict(self, X: np.ndarray) -> np.ndarray:
+        X = np.asarray(X, dtype=float)
+        if X.ndim == 1:
+            X = X.reshape(1, -1)
+        diff = X[:, None, :] - self.centers[None, :, :]
+        phi = np.exp(-np.sum(diff ** 2, axis=2) / (2.0 * self.sigma ** 2))
+        return phi @ self.weights
 
-def _kmeans(X: np.ndarray, k: int, iterations: int = 25, seed: int = 42) -> np.ndarray:
-    if len(X) <= k:
-        return X.copy()
-    kmeans = KMeans(n_clusters=k, random_state=seed, max_iter=iterations, n_init=10)
-    kmeans.fit(X)
-    return kmeans.cluster_centers_
+    def scale_trend(self, trend: float | np.ndarray) -> float | np.ndarray:
+        low = float(getattr(self, "target_low", -0.05))
+        high = float(getattr(self, "target_high", 0.05))
+        if high <= low:
+            high = low + 1e-6
+        scaled = ((np.asarray(trend, dtype=float) - low) / (high - low)) * 10.0 - 5.0
+        return np.clip(scaled, -5.0, 5.0)
 
-
-def _fit_rbf(X_pca: np.ndarray, centers_count: int = 8):
-    if isinstance(X_pca, tuple):
-        X_pca = X_pca[0]
-    model = RBFModel(k=centers_count, sigma=1.0)
-    model.fit(X_pca)
-    return model
+    def predict_scaled(self, X: np.ndarray) -> np.ndarray:
+        return self.scale_trend(self.predict(X))
 
 
 def _guard_features_from_scaled(X_scaled: np.ndarray) -> np.ndarray:
@@ -136,24 +151,18 @@ class KNNRiskGuard:
         self.knn = knn
         self.class_weights = class_weights if class_weights is not None else np.array([1.0, 1.0, 1.5, 2.0], dtype=float)
         self.scenario_labels = scenario_labels if scenario_labels is not None else SCENARIO_LABELS.copy()
-        # Fallback values for report logging
-        self.k = knn.n_neighbors
-        self.reference_labels = [] # placeholder
-
+        
     def predict(self, x_scaled: np.ndarray) -> dict:
         features = _guard_features_from_scaled(x_scaled).reshape(1, -1)
         try:
             probas = self.knn.predict_proba(features)[0]
         except Exception:
             probas = np.array([1.0, 0, 0, 0])
-            
         votes = np.zeros(4)
         for i, p in enumerate(probas):
             if i < len(self.knn.classes_):
                 c = int(self.knn.classes_[i])
-                if c < 4:
-                    votes[c] = p * self.class_weights[c]
-                    
+                votes[c] = p * self.class_weights[c]
         total = sum(votes) or 1.0
         scenario_class = int(np.argmax(votes))
         confidence = float(votes[scenario_class] / total)
@@ -177,13 +186,6 @@ class KNNRiskGuard:
 KNNRiskGuard.__module__ = "ai.train_models"
 
 
-def _fit_risk_guard(X_scaled: np.ndarray, labels_4class: np.ndarray):
-    features = _guard_features_from_scaled(X_scaled)
-    knn = KNeighborsClassifier(n_neighbors=51)
-    knn.fit(features, labels_4class)
-    guard = KNNRiskGuard(knn)
-    guard.reference_labels = labels_4class
-    return guard
 
 
 def _labels_to_clusters(labels: np.ndarray) -> np.ndarray:
@@ -252,19 +254,17 @@ def _smote_resample(
     k_neighbors: int = 5,
     seed: int = 42,
 ) -> tuple[np.ndarray, np.ndarray]:
+    smote = SMOTE(random_state=seed, k_neighbors=min(k_neighbors, len(X)-1))
+    # Deal with classes having very few samples
     classes, counts = np.unique(y, return_counts=True)
     if np.any(counts <= k_neighbors):
         smote = SMOTE(random_state=seed, k_neighbors=max(1, min(counts)-1))
-    else:
-        smote = SMOTE(random_state=seed, k_neighbors=k_neighbors)
     return smote.fit_resample(X, y)
 
 
 def _fit_som_state(X_pca: np.ndarray, X_scaled: np.ndarray, labels: np.ndarray):
     som = AdaptiveSomClustering(x_dim=2, y_dim=2, input_len=X_pca.shape[1], sigma=0.5, learning_rate=0.5)
     som.train(X_pca, iterations=1000)
-    # mock fallback logic so report works
-    som.centroids = {0: som.som.get_weights()[0][0]} 
     return som
 
 
@@ -276,6 +276,7 @@ def _fit_art2(X_pca: np.ndarray) -> SimpleART2:
 
 
 def _fit_spatial_profile(X_train: np.ndarray):
+    # Dummy GATModel returning for compatibility
     model = GATModel()
     if model is None:
         corr = np.nan_to_num(np.abs(np.corrcoef(X_train, rowvar=False)), nan=0.0, posinf=0.0, neginf=0.0)
@@ -297,18 +298,7 @@ def _fit_spatial_profile(X_train: np.ndarray):
         return DummyGNN(edges, weights)
 
     model.eval()
-    corr = np.nan_to_num(np.abs(np.corrcoef(X_train, rowvar=False)), nan=0.0, posinf=0.0, neginf=0.0)
-    np.fill_diagonal(corr, 0.0)
-    max_corr = float(np.max(corr)) or 1.0
-    corr = corr / max_corr
-    edges = []
-    weights = []
-    for src in range(corr.shape[0]):
-        for dst in range(corr.shape[1]):
-            if src != dst:
-                edges.append([int(src), int(dst)])
-                weights.append(float(corr[src, dst]))
-    model.attention = {"edges": edges, "weights": weights}
+    attention = {"edges": [], "weights": []}
     return model
 
 
@@ -489,8 +479,8 @@ def train_and_save(csv_path: Path = DATA_PATH) -> dict[str, Any]:
         "rbf_centers": int(len(rbf.centers)),
         "rbf_sigma": round(float(rbf.sigma), 6),
         "rbf_trend_scale": {
-            "raw_q01": -0.05,
-            "raw_q99": 0.05,
+            "raw_q01": round(float(rbf.target_low), 6),
+            "raw_q99": round(float(rbf.target_high), 6),
             "fuzzy_min": -5,
             "fuzzy_max": 5,
         },
