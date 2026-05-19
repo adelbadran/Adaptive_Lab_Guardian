@@ -57,9 +57,9 @@ BLUE = "\033[94m"
 BOLD = "\033[1m"
 RESET = "\033[0m"
 VALID_MODES = {"AI", "MANUAL"}
-DEFAULT_SYSTEM_MODE = os.getenv("ALG_SYSTEM_MODE", "AI").strip().upper()
+DEFAULT_SYSTEM_MODE = os.getenv("ALG_SYSTEM_MODE", "MANUAL").strip().upper()
 if DEFAULT_SYSTEM_MODE not in VALID_MODES:
-    DEFAULT_SYSTEM_MODE = "AI"
+    DEFAULT_SYSTEM_MODE = "MANUAL"
 
 DEFAULT_MANUAL_ACTION = {
     "fan": "OFF",
@@ -386,7 +386,7 @@ def on_disconnect(client, userdata, rc):
 
 
 # Global system mode (AI or MANUAL) and manual state tracking
-system_mode = "AI"  # Default to AI on boot
+system_mode = _read_persisted_system_mode()
 last_manual_action = DEFAULT_MANUAL_ACTION.copy()
 
 def on_message(client, userdata, msg):

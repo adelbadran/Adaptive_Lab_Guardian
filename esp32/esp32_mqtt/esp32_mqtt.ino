@@ -15,9 +15,11 @@
 // ════════════════════════════════════════════════
 //  WiFi & MQTT Configuration
 // ════════════════════════════════════════════════
-const char* ssid         = "miles";
-const char* password     = "@del278AiB";
-const char* mqtt_server  = "172.20.10.3";
+// UPDATE THESE TO MATCH YOUR NETWORK:
+const char* ssid         = "miles";                // WiFi network name
+const char* password     = "@del278AiB";           // WiFi password
+const char* mqtt_server  = "172.20.10.3";            // MQTT broker IP — must match dashboard ALG_MQTT_BROKER
+const int   mqtt_port    = 1883;                   // MQTT broker port
 const char* sensor_topic = "alg1/sensors";
 const char* action_topic = "alg1/actions";
 

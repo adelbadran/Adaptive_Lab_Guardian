@@ -20,7 +20,7 @@ const processes = [
   {
     name: 'ai-bridge',
     command: 'python',
-    args: [path.resolve(root, '..', 'ai', 'mqtt_client.py')],
+    args: ['-u', path.resolve(root, '..', 'ai', 'mqtt_client.py')],
   },
 ];
 

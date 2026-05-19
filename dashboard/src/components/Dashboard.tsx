@@ -679,9 +679,10 @@ export default function Dashboard() {
                     <div className="flex flex-row lg:flex-col gap-8 items-center justify-around w-full overflow-y-auto max-h-[850px] pr-2">
                       <MetricCircle label="Risk Classifier Accuracy" value={metrics.accuracy} color="emerald" />
                       <MetricCircle label="Topological Scenario Rate" value={metrics.scenarioAccuracy} color="blue" />
+                      <MetricCircle label="GNN Spatial Attention Fit" value={metrics.gnnAccuracy} color="blue" />
                       <MetricCircle label="PCA Variance Coverage" value={metrics.pcaExplained} color="slate" />
                       <MetricCircle label="Fuzzy Inference Precision" value={100 - metrics.falseAlertRate} color="amber" />
-                      <MetricCircle label="RL DQN Policy Success" value={100 - (metrics.warningMissRate * 8)} color="rose" />
+                      <MetricCircle label="RL Q-Learning Policy Success" value={100 - (metrics.warningMissRate * 8)} color="rose" />
                     </div>
                   </div>
 
@@ -746,7 +747,7 @@ export default function Dashboard() {
                           </div>
                         </div>
                         <div className="mt-2 pt-3 border-t border-slate-200/50 flex justify-between text-[8px] font-mono">
-                          <span className="text-slate-400">NODES: 5 | EDGES: 10</span>
+                          <span className="text-slate-400">NODES: 5 | EDGES: {metrics.gnnEdges ?? 20}</span>
                           <span className={cn("font-bold", (meta.spatial_risk || 0) > 0.65 ? "text-rose-600" : "text-emerald-600")}>
                             SPATIAL RISK: {formatNumber(meta.spatial_risk, 2)}
                           </span>
@@ -766,7 +767,7 @@ export default function Dashboard() {
                           </p>
                         </div>
                         <div className="mt-4 pt-3 border-t border-slate-200/50 flex justify-between text-[8px] font-mono">
-                          <span className="text-slate-400">VIGILANCE: 0.85</span>
+                          <span className="text-slate-400">VIGILANCE: 0.85 | CATEGORIES: {metrics.art2Categories ?? 5}</span>
                           <span className="font-bold text-rose-600">ANOMALY: {formatNumber(meta.anomaly_score, 2)}</span>
                         </div>
                       </div>
@@ -784,7 +785,7 @@ export default function Dashboard() {
                           </p>
                         </div>
                         <div className="mt-4 pt-3 border-t border-slate-200/50 flex justify-between text-[8px] font-mono">
-                          <span className="text-slate-400">SIGMA: 0.72</span>
+                          <span className="text-slate-400">SIGMA: {metrics.rbfSigma ?? 0.98}</span>
                           <span className="font-bold text-amber-600">TREND: {formatNumber(meta.trend, 1)}</span>
                         </div>
                       </div>
@@ -820,7 +821,7 @@ export default function Dashboard() {
                           </p>
                         </div>
                         <div className="mt-4 pt-3 border-t border-slate-200/50 flex justify-between text-[8px] font-mono">
-                          <span className="text-slate-400">RULES: 27 INTERFERENCES</span>
+                          <span className="text-slate-400">RULES: 10 ACTIVE RULES</span>
                           <span className="font-bold text-blue-600">RISK: {formatNumber(meta.risk_score, 1)}% ({meta.risk})</span>
                         </div>
                       </div>
@@ -834,11 +835,11 @@ export default function Dashboard() {
                           </div>
                           <p className="text-[11px] font-semibold text-slate-700 mb-1">Reinforcement Learning</p>
                           <p className="text-[9px] text-slate-500 leading-relaxed">
-                            Formulates optimal safety policy directives via deep Q-network feedback optimization. Balances power conservation, mechanical structural wear-and-tear, and emergency response activation timing.
+                            Formulates optimal safety policy directives via tabular Q-learning feedback optimization. Balances power conservation, mechanical structural wear-and-tear, and emergency response activation timing.
                           </p>
                         </div>
                         <div className="mt-4 pt-3 border-t border-slate-200/50 flex justify-between text-[8px] font-mono">
-                          <span className="text-slate-400">POLICY: DQN (TARGET NETWORK)</span>
+                          <span className="text-slate-400">POLICY: TABULAR Q-LEARNING (α=0.25, γ=0.90)</span>
                           <span className="font-bold text-purple-600">ACTION ID: {action.action_id}</span>
                         </div>
                       </div>
@@ -856,7 +857,7 @@ export default function Dashboard() {
                           </p>
                         </div>
                         <div className="mt-4 pt-3 border-t border-slate-200/50 flex justify-between text-[8px] font-mono">
-                          <span className="text-slate-400">COMPONENTS: 2 PRINCIPAL AXES</span>
+                          <span className="text-slate-400">COMPONENTS: 3 PRINCIPAL AXES</span>
                           <span className="font-bold text-slate-600">EXPLAINED: {formatNumber(metrics.pcaExplained, 1)}%</span>
                         </div>
                       </div>
@@ -874,7 +875,7 @@ export default function Dashboard() {
                           </p>
                         </div>
                         <div className="mt-4 pt-3 border-t border-slate-200/50 flex justify-between text-[8px] font-mono">
-                          <span className="text-slate-400">FITNESS: ADAPTIVE</span>
+                          <span className="text-slate-400">FITNESS: {metrics.gaScore ?? 0.4516}</span>
                           <span className="font-bold text-pink-600 animate-pulse">GENERATION: ACTIVE</span>
                         </div>
                       </div>

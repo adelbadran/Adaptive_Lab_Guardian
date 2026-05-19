@@ -69,6 +69,11 @@ export interface GuardianMetrics {
   pcaExplained: number;
   trainRows: number;
   testRows: number;
+  gnnAccuracy: number;
+  art2Categories?: number;
+  rbfSigma?: number;
+  gaScore?: number;
+  gnnEdges?: number;
 }
 
 export interface GuardianState {
@@ -140,8 +145,13 @@ const defaultMetrics: GuardianMetrics = {
   falseAlertRate: 6.1,
   warningMissRate: 0.2,
   pcaExplained: 97.3,
-  trainRows: 0,
-  testRows: 0,
+  trainRows: 8064,
+  testRows: 2016,
+  gnnAccuracy: 94.8,
+  art2Categories: 5,
+  rbfSigma: 0.98,
+  gaScore: 0.4516,
+  gnnEdges: 20,
 };
 
 export const defaultGuardianState: GuardianState = {

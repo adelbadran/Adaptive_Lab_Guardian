@@ -528,10 +528,10 @@
     }
   },
   "rbf_centers": 8,
-  "rbf_sigma": 1.0,
+  "rbf_sigma": 0.984943,
   "rbf_trend_scale": {
-    "raw_q01": -0.05,
-    "raw_q99": 0.05,
+    "raw_q01": -0.3401,
+    "raw_q99": 0.340534,
     "fuzzy_min": -5,
     "fuzzy_max": 5
   },
@@ -547,7 +547,10 @@
     "reference_rows": 8064
   },
   "som_clusters": [
-    0
+    0,
+    1,
+    2,
+    3
   ],
   "gnn_attention_edges": 20,
   "rl_qtable_shape": [
@@ -563,25 +566,25 @@
   "ga_score": 0.4516,
   "runtime_test": {
     "rows_tested": 2016,
-    "three_class_accuracy": 0.3279,
-    "four_scenario_accuracy": 0.2262,
-    "som_cluster_accuracy": 0.2361,
-    "false_positive_critical_rate": 0.6696,
-    "false_negative_danger_rate": 0.0,
-    "false_alert_rate": 0.3497,
-    "warning_miss_rate": 0.0,
+    "three_class_accuracy": 0.8616,
+    "four_scenario_accuracy": 0.8621,
+    "som_cluster_accuracy": 0.4851,
+    "false_positive_critical_rate": 0.0575,
+    "false_negative_danger_rate": 0.0759,
+    "false_alert_rate": 0.061,
+    "warning_miss_rate": 0.0015,
     "scenario_confusion_true_rows_pred_cols": [
       [
-        179,
-        3,
-        676,
-        24
+        761,
+        5,
+        0,
+        116
       ],
       [
-        1,
-        272,
-        649,
-        1
+        4,
+        919,
+        0,
+        0
       ],
       [
         0,
@@ -590,22 +593,22 @@
         0
       ],
       [
+        153,
         0,
         0,
-        206,
-        5
+        58
       ]
     ],
     "per_scenario_recall": {
       "0": {
         "name": "Normal",
         "support": 882,
-        "recall": 0.2029
+        "recall": 0.8628
       },
       "1": {
         "name": "Crowded",
         "support": 923,
-        "recall": 0.2947
+        "recall": 0.9957
       },
       "2": {
         "name": "Chemical",
@@ -615,25 +618,24 @@
       "3": {
         "name": "Security",
         "support": 211,
-        "recall": 0.0237
+        "recall": 0.2749
       }
     },
     "predicted_class_counts": {
-      "0": 177,
-      "1": 278,
-      "2": 1561
+      "0": 915,
+      "1": 927,
+      "2": 174
     },
     "predicted_scenario_counts": {
-      "0": 180,
-      "1": 275,
-      "2": 1531,
-      "3": 30
+      "0": 918,
+      "1": 924,
+      "3": 174
     },
     "predicted_cluster_counts": {
-      "0": 47,
-      "1": 472,
-      "2": 1157,
-      "3": 340
+      "0": 351,
+      "1": 515,
+      "2": 336,
+      "3": 814
     },
     "target_class_counts": {
       "0": 882,
@@ -651,10 +653,9 @@
       "3": 211
     },
     "action_counts": {
-      "ON/ON/ON/RED": 1531,
-      "ON/OFF/OFF/YELLOW": 278,
-      "OFF/OFF/OFF/GREEN": 177,
-      "OFF/ON/ON/RED": 30
+      "ON/OFF/OFF/YELLOW": 927,
+      "OFF/OFF/OFF/GREEN": 915,
+      "OFF/ON/ON/RED": 174
     }
   },
   "saved_artifacts": [
