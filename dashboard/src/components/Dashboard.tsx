@@ -679,6 +679,7 @@ export default function Dashboard() {
                     <div className="flex flex-row lg:flex-col gap-8 items-center justify-around w-full overflow-y-auto max-h-[850px] pr-2">
                       <MetricCircle label="Risk Classifier Accuracy" value={metrics.accuracy} color="emerald" />
                       <MetricCircle label="Topological Scenario Rate" value={metrics.scenarioAccuracy} color="blue" />
+                      <MetricCircle label="GNN Spatial Attention Fit" value={metrics.gnnAccuracy} color="blue" />
                       <MetricCircle label="PCA Variance Coverage" value={metrics.pcaExplained} color="slate" />
                       <MetricCircle label="Fuzzy Inference Precision" value={100 - metrics.falseAlertRate} color="amber" />
                       <MetricCircle label="RL DQN Policy Success" value={100 - (metrics.warningMissRate * 8)} color="rose" />
@@ -746,7 +747,7 @@ export default function Dashboard() {
                           </div>
                         </div>
                         <div className="mt-2 pt-3 border-t border-slate-200/50 flex justify-between text-[8px] font-mono">
-                          <span className="text-slate-400">NODES: 5 | EDGES: 10</span>
+                          <span className="text-slate-400">NODES: 5 | EDGES: {metrics.gnnEdges ?? 20}</span>
                           <span className={cn("font-bold", (meta.spatial_risk || 0) > 0.65 ? "text-rose-600" : "text-emerald-600")}>
                             SPATIAL RISK: {formatNumber(meta.spatial_risk, 2)}
                           </span>
@@ -766,7 +767,7 @@ export default function Dashboard() {
                           </p>
                         </div>
                         <div className="mt-4 pt-3 border-t border-slate-200/50 flex justify-between text-[8px] font-mono">
-                          <span className="text-slate-400">VIGILANCE: 0.85</span>
+                          <span className="text-slate-400">VIGILANCE: 0.85 | CATEGORIES: {metrics.art2Categories ?? 5}</span>
                           <span className="font-bold text-rose-600">ANOMALY: {formatNumber(meta.anomaly_score, 2)}</span>
                         </div>
                       </div>
@@ -784,7 +785,7 @@ export default function Dashboard() {
                           </p>
                         </div>
                         <div className="mt-4 pt-3 border-t border-slate-200/50 flex justify-between text-[8px] font-mono">
-                          <span className="text-slate-400">SIGMA: 0.72</span>
+                          <span className="text-slate-400">SIGMA: {metrics.rbfSigma ?? 0.98}</span>
                           <span className="font-bold text-amber-600">TREND: {formatNumber(meta.trend, 1)}</span>
                         </div>
                       </div>
@@ -874,7 +875,7 @@ export default function Dashboard() {
                           </p>
                         </div>
                         <div className="mt-4 pt-3 border-t border-slate-200/50 flex justify-between text-[8px] font-mono">
-                          <span className="text-slate-400">FITNESS: ADAPTIVE</span>
+                          <span className="text-slate-400">FITNESS: {metrics.gaScore ?? 0.4516}</span>
                           <span className="font-bold text-pink-600 animate-pulse">GENERATION: ACTIVE</span>
                         </div>
                       </div>
