@@ -10,22 +10,21 @@
 [![MQTT](https://img.shields.io/badge/Protocol-MQTT-3c5280?style=flat-square)](.)
 [![ESP32](https://img.shields.io/badge/Edge-ESP32-e7352c?style=flat-square&logo=arduino)](.)
 
-*ALG-1 · 3.IS — Full-stack AI + IoT industrial safety platform*
-
 </div>
 
 ---
 
-## نظرة عامة
+## Overview
 
-**Adaptive Lab Guardian (ALG-1)** منصة **AIoT** متكاملة لحماية المختبرات عالية المخاطر. تجمع بين عقدة **ESP32** على الحافة (Edge)، وخط أنابيب ذكاء اصطناعي من **7 نماذج** يعمل في الزمن الحقيقي، ولوحة تحكم ويب حديثة مع توأم رقمي ثلاثي الأبعاد.
+**Adaptive Lab Guardian (ALG-1)** is a full-stack **AIoT** platform for protecting high-risk laboratory environments. It combines an **ESP32** edge node, a real-time **7-model AI pipeline**, and a modern web dashboard with a 3D digital twin.
 
-بدلًا من انتظار تدخل بشري بعد تسرب غاز أو ارتفاع حرارة أو اختراق أمني، يحلل النظام الإشارات مجتمعة ويتخذ قرارًا خلال **أجزاء من الثانية** — ثم يُفعّل المشغلات (مراوح، إنذار، نافذة، إضاءة) ويتعلم من النتائج لتحسين قراراته المستقبلية.
+Rather than waiting for human intervention after a gas leak, temperature spike, or security breach, the system fuses all sensor signals, decides in **milliseconds**, drives actuators (fan, alarm, window, lighting), and learns from outcomes to improve future responses.
 
 ---
 
 ## Table of Contents
 
+- [Overview](#overview)
 - [The Problem](#the-problem)
 - [What is ALG?](#what-is-alg)
 - [System Architecture](#system-architecture)
@@ -146,13 +145,13 @@ sequenceDiagram
         AI->>API: Write sensor_log.csv
         API->>UI: SSE push
     else MANUAL OVERRIDE MODE
-        UI->>API: POST /api/mode {mode: MANUAL}
+        UI->>API: POST /api/mode (MANUAL)
         API->>MQTT: Publish mode (alg1/mode)
         MQTT->>AI: Pause AI publishing
         UI->>API: POST /api/manual
         API->>MQTT: Publish command (alg1/actions)
         MQTT->>HW: Instant hardware override
-        AI->>API: Pipeline runs silently; logs continue
+        AI->>API: Silent pipeline, logs continue
     end
 ```
 
@@ -682,8 +681,6 @@ Subscribes to `alg1/sensors`, runs inference, and publishes to `alg1/actions`.
 ## Acknowledgments
 
 **ALG-1** combines edge hardware, real-time AI, and modern web technology into one intelligent safety system — built to protect what matters when no one is watching.
-
-*Developed as part of the 3.IS academic program.*
 
 ---
 
