@@ -22,9 +22,25 @@ Rather than waiting for human intervention after a gas leak, temperature spike, 
 
 ---
 
+## Live Demo & Real Hardware
+
+Real project photos and the working hardware demo are hosted on Google Drive:
+
+**[Open Drive folder — Images & Live Demo](https://drive.google.com/drive/folders/1O4-FP51uECPyOTMI60t2VOj0jUc10Ayb?usp=sharing)**
+
+| Content | Drive folder | What it shows |
+|---------|--------------|---------------|
+| **Images** | `Images/` | Physical ESP32 setup, sensors, wiring, and lab prototype |
+| **Live Demo** | `Live Demo/` | Full system running — telemetry, AI decisions, and actuator response |
+
+The hardware video captures the **edge layer** (sensors → MQTT → fan, buzzer, servo, LEDs). The **dashboard voice assistant** runs in the browser and is easy to miss in a camera-only recording — see [Voice Assistant](#voice-assistant) below for how to present it.
+
+---
+
 ## Table of Contents
 
 - [Overview](#overview)
+- [Live Demo & Real Hardware](#live-demo--real-hardware)
 - [The Problem](#the-problem)
 - [What is ALG?](#what-is-alg)
 - [System Architecture](#system-architecture)
@@ -300,9 +316,11 @@ Adaptive_Lab_Guardian/
 │   ├── sensor_log.csv               # Live log written by the AI bridge
 │   └── control_state.json           # Persistent AI / Manual mode state
 │
+├── docs/
+│   └── Live Demo/                   # Optional local demo backup
+│
 ├── esp32/
-│   └── esp32_mqtt/
-│       └── esp32_mqtt.ino           # ESP32 firmware: sensors, MQTT, actuators
+│   └── esp32_mqtt.ino               # ESP32 firmware: sensors, MQTT, actuators
 │
 ├── requirements.txt
 ├── .gitignore
@@ -333,7 +351,7 @@ Adaptive_Lab_Guardian/
 
 ### Firmware Configuration
 
-Open `esp32/esp32_mqtt/esp32_mqtt.ino` in the **Arduino IDE** and update:
+Open `esp32/esp32_mqtt.ino` in the **Arduino IDE** and update:
 
 ```cpp
 const char* ssid        = "YOUR_WIFI_SSID";
@@ -411,9 +429,31 @@ The dashboard provides three views:
 
 ### Interactive Safety Features
 
-- **Voice Assistant** — Browser `speechSynthesis` announces cluster transitions and hazard alerts
 - **Dynamic Island HUD** — Context-aware status pill: green `SYSTEM SECURE` → amber warnings → crimson breach alerts
 - **3D WebGL Digital Twin** — Three.js lab viewer with animated fans, shifting spotlights, and emergency strobes synchronized to live state
+- **Voice Assistant** — Browser `speechSynthesis` announces risk transitions (dashboard-only; see below)
+
+### Voice Assistant
+
+The voice assistant is a **dashboard feature**, not hardware audio. It uses the browser [Web Speech API](https://developer.mozilla.org/en-US/docs/Web/API/SpeechSynthesis) (`window.speechSynthesis`) and triggers when risk state, scenario, or cluster changes. A camera pointed at the ESP32 board will not capture it.
+
+**Toggle:** Speaker icon in the dashboard header (enabled by default).
+
+| Trigger | Spoken announcement |
+|---------|---------------------|
+| Voice re-enabled | *"Voice assistant calibrated. Guardian protocol active."* |
+| Critical / anomaly / Dangerous | *"Alert! Critical hazard detected. [Scenario]. System is in dangerous anomaly state. Initiating automatic cooling and alarms immediately."* |
+| Warning | *"Warning. Elevated risk detected. [Scenario]. Engaging mitigation directives."* |
+| Return to nominal | *"Environmental parameters stabilized. Guardian loop returned to nominal flow."* |
+| Cluster transition | *"System transitioned to active cluster: [Scenario]."* |
+
+**How to showcase it when the hardware video cannot include it:**
+
+1. **30-second screen recording (recommended)** — Record the dashboard tab only: open `http://localhost:3000`, switch to **AI** mode, trigger a scenario (or replay from CSV), and capture the Dynamic Island change while the voice speaks. Upload as `Voice-Demo.mp4` to the same Drive folder.
+2. **Presentation slide** — Add one slide titled *"Voice Assistant — spoken alerts"* with the transcript table above; mention it runs in parallel with hardware actuators.
+3. **On-video captions** — Re-edit the hardware demo and add text overlays at key moments, e.g. *"Dashboard voice: Critical hazard detected — initiating alarms"* when the buzzer fires.
+4. **Audio-only clip** — Screen-record with system audio enabled (Windows: Xbox Game Bar → capture *browser tab* audio). Even 15 seconds is enough for reviewers.
+5. **README is the fallback** — This table documents exact phrases; reviewers can verify behavior against `dashboard/src/components/Dashboard.tsx`.
 
 ### REST & SSE Endpoints
 
@@ -514,7 +554,7 @@ Open the dashboard: **[http://localhost:3000](http://localhost:3000)**
 
 ### 6 — Flash the ESP32
 
-1. Open `esp32/esp32_mqtt/esp32_mqtt.ino` in Arduino IDE
+1. Open `esp32/esp32_mqtt.ino` in Arduino IDE
 2. Set WiFi credentials and MQTT broker IP
 3. Select your ESP32 board and COM port
 4. Upload
@@ -686,7 +726,7 @@ Subscribes to `alg1/sensors`, runs inference, and publishes to `alg1/actions`.
 
 <div align="center">
 
-**Explore the full architecture, source code, and live demo.**
+**Explore the full architecture, source code, and [live demo on Google Drive](https://drive.google.com/drive/folders/1O4-FP51uECPyOTMI60t2VOj0jUc10Ayb?usp=sharing).**
 
 *Protect your lab. 🥼*
 
