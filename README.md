@@ -447,14 +447,6 @@ The voice assistant is a **dashboard feature**, not hardware audio. It uses the 
 | Return to nominal | *"Environmental parameters stabilized. Guardian loop returned to nominal flow."* |
 | Cluster transition | *"System transitioned to active cluster: [Scenario]."* |
 
-**How to showcase it when the hardware video cannot include it:**
-
-1. **30-second screen recording (recommended)** — Record the dashboard tab only: open `http://localhost:3000`, switch to **AI** mode, trigger a scenario (or replay from CSV), and capture the Dynamic Island change while the voice speaks. Upload as `Voice-Demo.mp4` to the same Drive folder.
-2. **Presentation slide** — Add one slide titled *"Voice Assistant — spoken alerts"* with the transcript table above; mention it runs in parallel with hardware actuators.
-3. **On-video captions** — Re-edit the hardware demo and add text overlays at key moments, e.g. *"Dashboard voice: Critical hazard detected — initiating alarms"* when the buzzer fires.
-4. **Audio-only clip** — Screen-record with system audio enabled (Windows: Xbox Game Bar → capture *browser tab* audio). Even 15 seconds is enough for reviewers.
-5. **README is the fallback** — This table documents exact phrases; reviewers can verify behavior against `dashboard/src/components/Dashboard.tsx`.
-
 ### REST & SSE Endpoints
 
 Base URL: `http://localhost:8765` (configurable via `ALG_DASHBOARD_PORT`)
