@@ -73,7 +73,7 @@ University and industrial laboratories face risks that begin as **small, almost 
 
 ```mermaid
 flowchart TB
-    subgraph Edge ["🔌 Edge Layer — ESP32"]
+    subgraph Edge ["Edge Layer — ESP32"]
         S1[DHT11 · Temp & Humidity]
         S2[MQ135 · Air Quality via ADS1115]
         S3[LDR · Light via ADS1115]
@@ -81,13 +81,13 @@ flowchart TB
         A1[Fan · Buzzer · Servo · RGB LED]
     end
 
-    subgraph Transport ["📡 Transport — MQTT"]
+    subgraph Transport ["Transport — MQTT"]
         T1[alg1/sensors]
         T2[alg1/actions]
         T3[alg1/mode]
     end
 
-    subgraph AI ["🧠 AI Runtime — Python"]
+    subgraph AI ["AI Runtime — Python"]
         P1[PCA Noise Filter]
         P2[GNN · SOM · RBF · ART2]
         P3[Fuzzy Logic — 27 rules]
@@ -95,7 +95,7 @@ flowchart TB
         P5[GA Threshold Tuning]
     end
 
-    subgraph Web ["🖥️ Dashboard — React + Node.js"]
+    subgraph Web ["Dashboard — React + Node.js"]
         D1[SSE Live Stream]
         D2[3D WebGL Twin]
         D3[Manual Override UI]
