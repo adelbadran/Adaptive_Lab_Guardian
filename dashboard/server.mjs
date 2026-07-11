@@ -20,9 +20,9 @@ loadEnvFile(path.join(__dirname, '.env.local'));
 const config = {
   broker: process.env.ALG_MQTT_BROKER || '10.35.93.69',
   mqttPort: Number(process.env.ALG_MQTT_PORT || 1883),
-  sensorTopic: process.env.ALG_SENSOR_TOPIC || 'alg1/sensors',
-  actionTopic: process.env.ALG_ACTION_TOPIC || 'alg1/actions',
-  modeTopic: process.env.ALG_MODE_TOPIC || 'alg1/mode',
+  sensorTopic: process.env.ALG_SENSOR_TOPIC || 'alg/sensors',
+  actionTopic: process.env.ALG_ACTION_TOPIC || 'alg/actions',
+  modeTopic: process.env.ALG_MODE_TOPIC || 'alg/mode',
   apiPort: Number(process.env.ALG_DASHBOARD_PORT || 8765),
   historyLimit: Number(process.env.ALG_DASHBOARD_HISTORY || 80),
   reconnectMs: Number(process.env.ALG_MQTT_RECONNECT_MS || 5000),

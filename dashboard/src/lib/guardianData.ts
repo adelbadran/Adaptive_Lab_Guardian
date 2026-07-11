@@ -162,9 +162,9 @@ export const defaultGuardianState: GuardianState = {
   mqtt: {
     broker: '10.35.93.69',
     port: 1883,
-    sensorTopic: 'alg1/sensors',
-    actionTopic: 'alg1/actions',
-    modeTopic: 'alg1/mode',
+    sensorTopic: 'alg/sensors',
+    actionTopic: 'alg/actions',
+    modeTopic: 'alg/mode',
     connected: false,
     lastPacketAt: null,
     error: null,
