@@ -376,7 +376,11 @@ Adaptive_Lab_Guardian/
 ├── esp32/                   # 🔌 ESP32 firmware
 │   └── esp32_mqtt.ino
 │
-├── docs/screenshots/        # 📸 Project screenshots
+├── docs/                    # 📄 Documentation & media
+│   ├── screenshots/         # Dashboard & UI screenshots
+│   ├── real-hardware/       # Real project hardware photos
+│   └── Presentation/        # Project presentation (.pptx)
+│
 ├── requirements.txt
 └── README.md
 ```
