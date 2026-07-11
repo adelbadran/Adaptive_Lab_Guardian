@@ -1,6 +1,6 @@
 <div align="center">
 
-# 🛡️ Adaptive Lab Guardian (ALG)
+# 🛡️ Adaptive Lab Guardian (ALG) 
 
 ### When 7 AI Models Team Up to Protect a Laboratory — Even When No One Is Watching.
 
