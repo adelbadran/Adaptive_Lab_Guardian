@@ -28,10 +28,10 @@ Real project photos and the working hardware demo are hosted on Google Drive:
 
 **[Open Drive folder — Images & Live Demo](https://drive.google.com/drive/folders/1O4-FP51uECPyOTMI60t2VOj0jUc10Ayb?usp=sharing)**
 
-| Content | Drive folder | What it shows |
-|---------|--------------|---------------|
-| **Images** | `Images/` | Physical ESP32 setup, sensors, wiring, and lab prototype |
-| **Live Demo** | `Live Demo/` | Full system running — telemetry, AI decisions, and actuator response |
+| Content | Drive Folder | Description |
+| :--- | :--- | :--- |
+| **Images** | `Images/` | Comprehensive shots of the fully integrated project during operation, showcasing the final system setup and wiring. |
+| **Live Demo** | `Live Demo/` | Demonstration videos of the system operating in real-time, featuring:<br>• A video showing the physical hardware components and actuator responses.<br>• A video showcasing the live dashboard UI, telemetry data, and system analytics. |
 
 The hardware video captures the **edge layer** (sensors → MQTT → fan, buzzer, servo, LEDs). The **dashboard voice assistant** runs in the browser and is easy to miss in a camera-only recording — see [Voice Assistant](#voice-assistant) below for how to present it.
 
