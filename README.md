@@ -12,7 +12,7 @@
 
 <br/>
 
-<img src="docs/screenshots/dashboard_overview.png" alt="ALG Dashboard — Real-time sensor monitoring with 3D Digital Twin" width="90%"/>
+<img src="docs/screenshots/dashboard_overview.png" alt="ALG-1 Dashboard — Real-time sensor monitoring with 3D Digital Twin" width="90%"/>
 
 <sub><i>Real-time dashboard with live sensor telemetry, 3D Digital Twin, and AI-powered anomaly detection.</i></sub>
 
@@ -36,7 +36,7 @@
 
 ## 🔍 Overview
 
-**Adaptive Lab Guardian (ALG)** is a full-stack **AIoT** platform for protecting high-risk laboratory environments. It combines an **ESP32** edge node, a real-time **7-model AI pipeline**, and a modern web dashboard with a 3D digital twin.
+**Adaptive Lab Guardian (ALG-1)** is a full-stack **AIoT** platform for protecting high-risk laboratory environments. It combines an **ESP32** edge node, a real-time **7-model AI pipeline**, and a modern web dashboard with a 3D digital twin.
 
 Rather than waiting for human intervention after a gas leak, temperature spike, or security breach, the system fuses all sensor signals, decides in **milliseconds**, drives actuators (fan, alarm, window, lighting), and learns from outcomes to improve future responses.
 
@@ -59,7 +59,7 @@ University and industrial laboratories face risks that begin as **small, almost 
 | 🚨 Unauthorized access | Security breaches in restricted zones |
 | ⏱️ Delayed human response | Traditional alarms wait for someone to notice and react |
 
-> **Traditional systems wait for humans to react. ALG does not wait.**
+> **Traditional systems wait for humans to react. ALG-1 does not wait.**
 
 ---
 
@@ -76,9 +76,9 @@ flowchart TB
     end
 
     subgraph Transport ["Transport — MQTT"]
-        T1[alg/sensors]
-        T2[alg/actions]
-        T3[alg/mode]
+        T1[alg1/sensors]
+        T2[alg1/actions]
+        T3[alg1/mode]
     end
 
     subgraph AI ["AI Runtime — Python"]
@@ -202,7 +202,7 @@ The dashboard provides three interactive views:
 
 <div align="center">
 
-<img src="docs/real-hardware/real_hardware_setup.jpg" alt="ALG Real Hardware" width="80%"/>
+<img src="docs/real-hardware/real_hardware_setup.jpg" alt="ALG-1 Real Hardware" width="80%"/>
 
 <sub><i>Real project hardware — ESP32 edge node with DHT11, MQ135, PIR, LDR sensors and fan, buzzer, servo, RGB LED actuators.</i></sub>
 
@@ -258,9 +258,9 @@ Create `dashboard/.env`:
 ```env
 ALG_MQTT_BROKER=127.0.0.1
 ALG_MQTT_PORT=1883
-ALG_SENSOR_TOPIC=alg/sensors
-ALG_ACTION_TOPIC=alg/actions
-ALG_MODE_TOPIC=alg/mode
+ALG_SENSOR_TOPIC=alg1/sensors
+ALG_ACTION_TOPIC=alg1/actions
+ALG_MODE_TOPIC=alg1/mode
 ALG_DASHBOARD_PORT=8765
 ALG_PURE_IOT=false
 VITE_DASHBOARD_API_URL=http://localhost:8765
@@ -391,8 +391,8 @@ Adaptive_Lab_Guardian/
 
 <div align="center">
 
-**ALG** — Built to protect what matters when no one is watching. 🥼
+**ALG-1** — Built to protect what matters when no one is watching. 🥼
 
-[📂 Live Demo](https://drive.google.com/drive/folders/1O4-FP51uECPyOTMI60t2VOj0jUc10Ayb?usp=sharing) · [⬆ Back to top](#️-adaptive-lab-guardian-alg)
+[📂 Live Demo](https://drive.google.com/drive/folders/1O4-FP51uECPyOTMI60t2VOj0jUc10Ayb?usp=sharing) · [⬆ Back to top](#️-adaptive-lab-guardian-alg-1)
 
 </div>

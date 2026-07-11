@@ -20,8 +20,8 @@ const char* ssid         = "miles";                // WiFi network name
 const char* password     = "@del278AiB";           // WiFi password
 const char* mqtt_server  = "172.20.10.3";            // MQTT broker IP — must match dashboard ALG_MQTT_BROKER
 const int   mqtt_port    = 1883;                   // MQTT broker port
-const char* sensor_topic = "alg/sensors";
-const char* action_topic = "alg/actions";
+const char* sensor_topic = "alg1/sensors";
+const char* action_topic = "alg1/actions";
 
 // ════════════════════════════════════════════════
 //  Pin Definitions

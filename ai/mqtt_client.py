@@ -43,9 +43,9 @@ _ai_runtime: tuple[Callable[..., dict[str, Any]], Callable[..., str]] | None = N
 
 BROKER = os.getenv("ALG_MQTT_BROKER", "127.0.0.1")
 PORT = int(os.getenv("ALG_MQTT_PORT", "1883"))
-SENSOR_TOPIC = os.getenv("ALG_SENSOR_TOPIC", "alg/sensors")
-ACTION_TOPIC = os.getenv("ALG_ACTION_TOPIC", "alg/actions")
-MODE_TOPIC = os.getenv("ALG_MODE_TOPIC", "alg/mode")
+SENSOR_TOPIC = os.getenv("ALG_SENSOR_TOPIC", "alg1/sensors")
+ACTION_TOPIC = os.getenv("ALG_ACTION_TOPIC", "alg1/actions")
+MODE_TOPIC = os.getenv("ALG_MODE_TOPIC", "alg1/mode")
 ACTION_FORMAT = os.getenv("ALG_MQTT_ACTION_FORMAT", "json").lower()
 RECONNECT_DELAY = 5
 
