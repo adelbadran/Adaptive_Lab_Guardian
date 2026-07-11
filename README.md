@@ -200,6 +200,10 @@ The dashboard provides three interactive views:
 
 ## 🔧 Hardware Setup (ESP32)
 
+![ALG-1 Real Hardware](docs/real-hardware/alg1_real_hardware_setup.jpg)
+
+<sub><i>Real project hardware — ESP32 edge node with DHT11, MQ135, PIR, LDR sensors and fan, buzzer, servo, RGB LED actuators.</i></sub>
+
 ### Sensors
 
 | Sensor | Component | ESP32 Pin |
