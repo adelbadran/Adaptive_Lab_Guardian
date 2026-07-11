@@ -18,7 +18,7 @@
 
 <br/><br/>
 
-<img src="docs/screenshots/alg1_real_hardware_setup.jpg" alt="ALG-1 Real Hardware — ESP32 with sensors and actuators" width="70%"/>
+<img src="docs/real-hardware/alg1_real_hardware_setup.jpg" alt="ALG-1 Real Hardware — ESP32 with sensors and actuators" width="70%"/>
 
 <sub><i>Real project hardware — ESP32 edge node with DHT11, MQ135, PIR, LDR sensors and fan, buzzer, servo, RGB LED actuators.</i></sub>
 
